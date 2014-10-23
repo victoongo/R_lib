@@ -1,0 +1,368 @@
+\documentclass[12pt]{article}
+
+\usepackage{times}
+\usepackage[cm]{fullpage}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+We will get an object x.methy450 with slots for the gene region level summary.
+
+<<get_libraries_and_set_options, cache = FALSE, echo = TRUE, include = FALSE>>=
+options(width = 60)
+if(require("IMA")){
+    print("IMA is loaded correctly")
+} else {
+    print("trying to install IMA")
+    install.packages("IMA",repos=c("http://rforge.net"))
+    if(require('IMA')){
+        print('IMA is installed and loaded')
+    } else {
+        stop("could not install IMA")
+    }
+
+}
+library(xtable)
+library(doParallel)
+library(foreach)
+cl <- makeCluster(12)
+registerDoParallel(cl)
+
+@
+
+<<load_data, cache = TRUE, echo = TRUE, include = TRUE>>=
+#load the mvalues, pvalue, and hm450 matrix
+#hm450 is the complete annotation matrix
+load("/proj/design/il450k/nest13/R/MvalueAnalysisStructures.RData")
+
+dim(mvalues)
+dim(hm450)
+dim(pData)
+#hm450 contains the full annotation information and matches the dimension of hm450
+rm(annot)
+table(rownames(pData) == pData$nestid)
+
+#load the behavioral scores
+epi<-read.csv("NESTSR_IVERSEN_8_22_15.csv", as.is=TRUE)
+dim(epi)
+length(unique(epi$nestid)) == nrow(epi)
+rownames(epi) <-epi$nestid
+
+#merge patient info (race, age, etc) with behavioral scores
+table(keep<-rownames(pData) %in% rownames(epi))
+pData<-pData[keep,]
+mvalues<-mvalues[,keep]
+epi <- epi[rownames(pData),]
+colnames(epi)[colnames(epi) %in% colnames(pData)]
+pData<-cbind(pData,epi[,colnames(epi) != "nest_id"])
+rm(epi)
+
+#delete rows for which we do not have mother's ADHD data
+keep <- (!is.na(pData$asrs_ADHD))
+pData <- pData[keep,]
+mvalues <- mvalues[,keep]
+dim(mvalues)
+rm(keep)
+
+#only keep those probes where SNPs are less than half a percent
+table(hm450$KeepHalfPct)
+table(rownames(hm450)==rownames(mvalues))
+mvalues<-mvalues[hm450$KeepHalfPct,]
+hm450<-hm450[hm450$KeepHalfPct,]
+table(rownames(hm450)==rownames(mvalues))
+
+#colnames of mvalues are the barcode
+#rownames of pData are the nestid (nest id and sample id are equal)
+#for duplicate samples we used the higher quality mvalues
+#which leads pData$barcode not corresponding to colnames of mvalues
+#set rownames of pData to colnames of mvalues which is the barcode
+rownames(pData) <- colnames(mvalues)
+
+#create categorical variables for mother's ADHD, education, parity, and pre-pregnancy BMI
+pData$asrs_ADHD_2cat <- factor(pData$asrs_ADHD, labels = 0:1, levels = 0:1)
+pData$education_3cat<- factor(pData$education_3cat, labels = 1:3, levels = 1:3)
+pData$parity_3cat <- factor(pData$parity_3cat, labels = 0:2, levels = 0:2)
+pData$prePregBMIthreeLev <- rep(NA, nrow(pData))
+pData$prePregBMIthreeLev[(!is.na(pData$BMI_LMP_kgm2)) & (pData$BMI_LMP_kgm2 < 30)] <- 0
+pData$prePregBMIthreeLev[(!is.na(pData$BMI_LMP_kgm2)) & (pData$BMI_LMP_kgm2 >= 30) & (pData$BMI_LMP_kgm2 < 35)] <- 1
+pData$prePregBMIthreeLev[(!is.na(pData$BMI_LMP_kgm2)) & (pData$BMI_LMP_kgm2>=35)] <- 2
+pData$prePregBMIthreeLev <-factor(pData$prePregBMIthreeLev, levels = 0:2, labels = c("Lt30", "30toLt35", "Ge35"))
+@
+
+<<create_methy450batch_object, cache = TRUE, echo = TRUE, include = TRUE>>=
+##provide the summary statistics for the methy450 object
+
+##create a pDetect matrix
+##initialize detectP values to one because we don't have the detection scores for the probes
+detect_p <- matrix(1, nrow = dim(mvalues)[1], ncol = dim(mvalues)[2])
+colnames(detect_p) <- colnames(mvalues)
+
+mval.matrix = as.matrix(mvalues)
+detect_p = as.matrix(detect_p)
+annotation = as.matrix(hm450)
+groupinfo = pData
+
+cat(".......\nSplit the annotation file to 11 
+    annotated region categories\n.......\n\n", fill = TRUE)
+    annot = annotation
+    name = "UCSC_RefGene_Name"
+    cpGsite = as.character(annot[, 1])
+    genelist = strsplit(as.character(annot[, name]), ";")
+    genelist[which(genelist == "character(0)")] = "NA"
+	#make a list with Refgene group for each site, sometimes more than one
+    #input NA for those without value
+    name = "UCSC_RefGene_Group"
+    refgene = strsplit(as.character(annot[, name]), ";")
+    #make a list with Refgene group for each site, sometimes more than one
+    refgene[which(refgene == "character(0)")] = "NA"
+    listlength = lapply(refgene, length)
+    listlength[listlength == 0] = 1
+    col0 = rep(1:nrow(annot), listlength)
+    col1 = rep(cpGsite, listlength)
+    col2 = unlist(genelist)
+    col3 = unlist(refgene)
+    col4 = rep(as.character(annot[, "Relation_to_UCSC_CpG_Island"]), 
+        listlength)
+    col5 = rep(as.character(annot[, "UCSC_CpG_Islands_Name"]), 
+        listlength)
+##we rep the col0, 1, 2, 3 according to how many sites each CpG probe is linked to 
+##col0 are the indices, col1 are the Cpg probe names, col2 are the names of the
+##associated genes, col3 are the name of the associated gene regions (exon, etc), 
+##col4 are CpG site region (i.e. shelf, shore, etc.),
+##col5 are the chromosomal location of the CpG islands
+    splitToRegionlist = function(grepname = c("TSS1500", "TSS200", 
+        "5'UTR", "1stExon", "Gene Body", "3'UTR")) {
+        index = col3 == grepname
+        col1sub = col1[index]
+        col2sub = col2[index]
+        temp = split(col1sub, col2sub)
+        returnSID = lapply(temp, unique)
+        col0sub = col0[index]
+        temp = split(col0sub, col2sub)
+        returnPID = lapply(temp, unique)
+        return(Ind = list(SID = returnSID, PID = returnPID))
+    }
+##First list of summary stats: grouped by associated genes
+    TSS1500Ind = splitToRegionlist(grepname = "TSS1500")
+    TSS200Ind = splitToRegionlist(grepname = "TSS200")
+    UTR5Ind = splitToRegionlist(grepname = "5'UTR")
+    EXON1Ind = splitToRegionlist(grepname = "1stExon")
+    GENEBODYInd = splitToRegionlist(grepname = "Body")
+    UTR3Ind = splitToRegionlist(grepname = "3'UTR")
+
+    cat("TSS1500 region contains:", length(TSS1500Ind$SID), 
+        "UCSC REFGENE region \nTSS200 region contains:", 
+        length(TSS200Ind$SID), "UCSC REFGENE region\n5'UTR region contains:", 
+        length(UTR5Ind$SID), "UCSC REFGENE region\n1st Exon region contains:", 
+        length(EXON1Ind$SID), "UCSC REFGENE region\nGene body region contains:", 
+        length(GENEBODYInd$SID), "UCSC REFGENE region\n3'UTR region contains:", 
+        length(UTR3Ind$SID), "UCSC REFGENE region\n", fill = TRUE)
+
+##Second list of summary stats: grouped by chromosomal regions
+    splitToRegionlist2 = function(grepname = c("Island", "N_Shore", 
+        "S_Shore", "N_Shelf", "S_Shelf")) {
+        index = col4 == grepname
+        col1sub = col1[index]
+        col5sub = col5[index]
+        temp = split(col1sub, col5sub)
+        returnSID = lapply(temp, unique)
+        col0sub = col0[index]
+        temp = split(col0sub, col5sub)
+        returnPID = lapply(temp, unique)
+        return(Ind = list(SID = returnSID, PID = returnPID))
+    }
+
+    ISLANDInd = splitToRegionlist2(grepname = "Island")
+    NSHOREInd = splitToRegionlist2(grepname = "N_Shore")
+    SSHOREInd = splitToRegionlist2(grepname = "S_Shore")
+    NSHELFInd = splitToRegionlist2(grepname = "N_Shelf")
+    SSHELFInd = splitToRegionlist2(grepname = "S_Shelf")
+
+    cat("Island region contains:", length(ISLANDInd$SID), 
+        "UCSC CPG ISLAND region\nN_Shore region contains", 
+        length(NSHOREInd$SID), "UCSC CPG ISLAND region\nS_Shore region contains", 
+        length(SSHOREInd$SID), "UCSC CPG ISLAND region\nN_Shelf region contains", 
+        length(NSHELFInd$SID), "UCSC CPG ISLAND region\nS_Shelf region contains", 
+        length(SSHELFInd$SID), "UCSC CPG ISLAND region\n", fill = TRUE)
+    setClass("methy450batch", representation(bmatrix = "matrix", 
+        annot = "matrix", detectP = "matrix", groupinfo = "data.frame", 
+        TSS1500Ind = "list", TSS200Ind = "list", UTR5Ind = "list", 
+        EXON1Ind = "list", GENEBODYInd = "list", UTR3Ind = "list", 
+        ISLANDInd = "list", NSHOREInd = "list", SSHOREInd = "list", 
+        NSHELFInd = "list", SSHELFInd = "list"), where = topenv(parent.frame()))
+    x.methy450 = new("methy450batch", bmatrix = as.matrix(mval.matrix), 
+        annot = as.matrix(annotation), detectP = as.matrix(detect_p), 
+        groupinfo = groupinfo, TSS1500Ind = TSS1500Ind, TSS200Ind = TSS200Ind, 
+        UTR5Ind = UTR5Ind, EXON1Ind = EXON1Ind, GENEBODYInd = GENEBODYInd, 
+        UTR3Ind = UTR3Ind, ISLANDInd = ISLANDInd, NSHOREInd = NSHOREInd, 
+        SSHOREInd = SSHOREInd, NSHELFInd = NSHELFInd, SSHELFInd = SSHELFInd)
+    cat("\nA methy450batch class is created and the slotNames are:\n", 
+        slotNames(x.methy450), "\n", fill = TRUE) 
+
+##check the length of the regions 
+	for (slot in slotNames(x.methy450)){
+        if(grepl('Ind', slot, ignore.case = TRUE)){
+            print(paste0('x.methy450@', slot, '$SID'))
+            print(length(eval(parse(text = paste0('x.methy450@', slot, '$SID')))))
+        }
+        else{
+            paste0('x.methy450@', slot)
+            print(dim(eval(parse(text = paste0('x.methy450@', slot)))))
+        }
+	}
+@
+
+<<summary_statistics, cache = TRUE, echo = TRUE, include = TRUE>>=
+#Get a matrix for each region with the mean m-values
+
+mval.reg = list()
+
+for (s in slotNames(x.methy450)){
+    if(grepl('Ind', s, ignore.case = TRUE)){
+        obj <- slot(x.methy450, s)
+        #delete 'Ind' at the end of each region name
+        name <- substr(s, 1, nchar(s)-3)
+        mval.reg[[s]] <- indexregionfunc(indexlist= obj,
+            beta=x.methy450@bmatrix, indexmethod="median")
+    }
+}
+
+length(mval.reg)
+names(mval.reg)
+@
+
+<<regression, cache = TRUE, echo = FALSE, include = TRUE, eval = TRUE>>=
+dim(mvalues)
+#create BASC_AP_HY composite score
+pData$BASC_AP_HY <- rowMeans(cbind(pData$BASC_AP, pData$BASC_HY))
+#behavioral scores
+y_vars <- c("BASC_AP_HY", "BASC_AP", "BASC_HY", "BRF_ISCI", "BRF_FI", 
+    "BRF_EMI", "BRF_GEC", "BRF_IN", "BRF_SF")
+
+lmbehav <- function(m, pdat, bhv.score) {
+    cntrl <- c("~pdat$age_mo_SR_Surv", "sex", "birthwt_kg", 
+    "GestAge_weeks", "education_3cat", "Race3", "parity_3cat", 
+    "mom_age_delv", "prePregBMIthreeLev", "asrs_ADHD_2cat")
+    fmla<-paste('pdat$', bhv.score, 
+        paste(cntrl, collapse = "+pdat$"), "+pdat$mval", sep = "")
+
+    n.probes = dim(m)[1]
+    pval <- vector(mode = "numeric", length = n.probes)
+    for (i in 1:n.probes) {
+        pdat$mval <- m[i,]
+        lm.out <- lm(as.formula(fmla), data = pdat)
+        pval[i] <- coef(summary(lm.out))["pdat$mval", "Pr(>|t|)"]
+    }
+    # lm.out <- lm(pdat$BASC_AP_HY~pdat$age_mo_SR_Surv+pdat$sex+pdat$birthwt_kg+
+    #      pdat$GestAge_weeks+pdat$education_3cat+pdat$Race3+pdat$parity_3cat+
+    #      pdat$mom_age_delv+pdat$prePregBMIthreeLev+pdat$asrs_ADHD_2cat, data = pdat)
+    
+    return(pval)
+}
+
+#initialize the column we will use to store the methylation value one site at a time
+pData$mval <- NA
+
+site.regr <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lmbehav(mvalues, pData, y)}
+length(site.regr)
+names(site.regr)
+attributes(site.regr)
+@
+
+<<pv_plots, cache = TRUE, eval = TRUE>>=
+pvplot<-function(pvs,titl){
+    nlogpv<-sort(-log10(pvs[!is.na(pvs)]))
+    n.use<-length(nlogpv)
+    expctd<-((1:n.use)-0.5)/n.use
+    expctd<-sort(-log10(expctd))
+    ##  lambda<-summary(lm(nlogpv[1:2000]~expctd[1:2000]))$coefficients[2,1]
+    par(pty="s")
+    thin<-seq(1,n.use,by=1)
+    if (n.use>10000) thin<-c(seq(1,floor(0.5*n.use),by=100),seq(floor(0.5*n.use),floor(0.75*n.use),by=10),
+                            seq(floor(0.75*n.use),floor(0.95*n.use),by=2),seq(floor(0.95*n.use),n.use,by=1))
+    if (n.use>100000) thin<-c(seq(1,floor(0.5*n.use),by=1000),seq(floor(0.5*n.use),floor(0.75*n.use),by=100),
+                            seq(floor(0.75*n.use),floor(0.95*n.use),by=10),seq(floor(0.95*n.use),n.use,by=1))
+    plot(nlogpv[thin],expctd[thin],pch=16,main=titl,las=1,
+       cex=1.5,xlab="observed -log10(pv)",ylab="expected -log10(pv)")
+    ## text(x=0.5,y=3.5,labels=paste("lambda =",round(lambda,3),sep=" "))
+    legend(x="topleft",inset=0.05,
+         legend=c("95% Pointwise Interval Under Null","Expected Under Null"),
+         lty=c(1,1),col=c(3,2),lwd=c(4,4),cex=0.75)
+    abline(a=0,b=1,col=2,lwd=2)
+    q0.025allc<-numeric(n.use)
+    q0.975allc<-numeric(n.use)
+    ##q0.025ballc<-numeric(n.use)
+    ##q0.975ballc<-numeric(n.use)
+    ##bonf.adj<-n.use
+    for (i in 1:n.use){
+    q0.025allc[i]<-qbeta(0.025,shape1=i,shape2=(n.use-i+1))
+    q0.975allc[i]<-qbeta((1-0.025),shape1=i,shape2=(n.use-i+1))
+    ##q0.025ballc[i]<-qbeta(0.025/bonf.adj,shape1=i,shape2=(n.use-i+1))
+    ##q0.975ballc[i]<-qbeta((1-0.025/bonf.adj),shape1=i,shape2=(n.use-i+1))
+    }
+    lines(sort(-log10(q0.025allc))[thin],expctd[thin],lwd=3,col=3)
+    lines(sort(-log10(q0.975allc))[thin],expctd[thin],lwd=3,col=3)
+    ##lines(sort(-log10(q0.025ballc)),expctd,lwd=3,col=4)
+    ##lines(sort(-log10(q0.975ballc)),expctd,lwd=3,col=4)
+    return(NULL)
+}
+    for (i in 1:9){
+        pvplot(site.regr[[i]], y_vars[i])
+    }
+@
+
+<<fn_to_iterate_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = TRUE>>=
+#We need to combine the y_vals in the data frame and regress them at the same time
+#We need to combine the x_vals in the 
+behav_score <- pData[y_vars]
+
+lmbehav2 <- function(m, pdat, scores) {
+    cntrl <- c("~pdat$age_mo_SR_Surv", "sex", "birthwt_kg", 
+    "GestAge_weeks", "education_3cat", "Race3", "parity_3cat", 
+    "mom_age_delv", "prePregBMIthreeLev", "asrs_ADHD_2cat")
+    
+    regions <- c("exon1", "genebody", "island", 
+    "nshelf", "nshore", "sshelf", "sshore",
+    "tss1500", "tss200", "utr3", "utr5")
+    
+    fmla<-paste("pdat$", scores, 
+        paste(cntrl, collapse = "+pdat$"), "+pdat$mval", sep = "")
+
+    pv.reg <- vector(mode = "list", length = 11)
+    names(pv.reg) <- regions
+#regress against the methylation values at each region
+#do this for each of the 11 region categories
+    for (r in names(m)){
+        n_probes <- dim(m[[r]])[1]
+        pv.reg[[j]] <- vector(mode= "numeric", length = n_probes)
+        for (i in 1:n_probes) {
+            pdat$mval <- m[[r]][i,]
+            lm.out <- lm(as.formula(fmla), data = pdat)
+            pv.reg[[r]][i] <- coef(summary(lm.out))["pdat$mval", "Pr(>|t|)"]
+        }
+    }
+    return(pv.reg)
+}
+@
+
+<<iterate_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = FALSE>>=
+#region based regression
+reg.rgr <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lmbehav2(mval.reg, pData, y)}
+@
+
+<<plots_of_p.sumryregr, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = FALSE>>=
+
+reg <- c("exon1", "genebody", "island", 
+    "nshelf", "nshore", "sshelf", "sshore",
+    "tss1500", "tss200", "utr3", "utr5")
+
+for (i in 1:9){
+    for (r in reg){
+    pvplot(p.sumryregr[[i]][[r]], paste(y_vars[[i]], r))
+    }
+}
+@
+
+\end{document}
