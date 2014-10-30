@@ -1,4 +1,4 @@
 R_lib
 =====
 
-R libraries for common procedures
+R libraries for functional code!
