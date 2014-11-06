@@ -1,0 +1,43 @@
+\documentclass[a4paper]{article}
+\usepackage{pdflscape}
+\usepackage[margin = 1 cm]{geometry}
+
+\begin{document}
+Check specific genes, based on previous literature for the p-values across the behavioral spectrum.
+
+<<genes, dev = "pdf", results = 'asis', echo = TRUE, fig.show = 'hold'>>=
+#create a data frame and print a table of the significant genes
+hotgenes <- c("SLC6A3", "DRD4", "COMT", "SLC6A4", 
+	"DRD5", "SNAP25", "DBH", "MAOA", "BDNF",
+	"SLC6A2", "HTR1B", "ADRA2A", "HTR2A", "TPH2", "DRD2", "DRD1",
+	"DRD3", "CHRNA4", "ADRA2C", "TH", "MAOB", "TPH1", "DDC", "HTR2C")
+for (i in hotgenes){
+	for(j in 1:12){
+		ind <- grep(i, col2)
+		id <- unique(col1[ind])
+		hot.pvals <- bytable(site.regr[[j]][id], list(rep(i, length(id)), id))
+		print(latex.table.by(hot.pvals))
+	}
+}
+@
+
+We found the methylation signature for chrX:70712049-70712821 to be highly correlated with BRF-GEC.
+Here are the regression plots of the 
+methylation values vs. BRF-GEC scores at the CpG sites in this region. 
+
+<<chrX, echo = TRUE, eval = TRUE, out.width='.5\\linewidth', fig.show = 'hold'>>=
+#extract the CpG sites, and then run regression and plot
+ind <- grep('chrX:70712049-70712821', col5)
+id <- unique(col1[ind])
+
+for (each in id){
+	titl <- paste("Gene:", hm450[each, 'UCSC_RefGene_Name'], "pval=", site.regr[[7]][[each]])
+	pData$mval <- mvalues[each,]
+	lm.out <- lm(pData$BRF_GEC~pData$age_mo_SR_Surv+pData$sex+pData$birthwt_kg+
+			pData$GestAge_weeks+pData$education_3cat+pData$Race3+pData$parity_3cat+
+			pData$mom_age_delv+pData$prePregBMIthreeLev+
+			pData$asrs_ADHD_2cat+pData$mval, data = pData)
+	plot(pData$mval, pData$BRF_GEC, main = titl, xlab = "methylation intensity", ylab = "BRF_GEC")    
+}
+@
+\end{document}

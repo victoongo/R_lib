@@ -1,0 +1,81 @@
+\documentclass[a4paper]{article}
+\usepackage{pdflscape}
+\usepackage{graphicx}
+\usepackage[margin = 1 cm]{geometry}
+
+\begin{document}
+
+Illumina characterizes probes into 6 categories: TSS1500, TSS200, 5' UTR, 1st exon, gene body, and 3' UTR.
+Promoter regions were divided into two, mutually exclusive bins of 200 bp and 1500 bp blocks upstream of the
+transcription start site (designated TSS200 and TSS1500, respectively).
+
+\begin{landscape}
+<<signif_genes, dev = "pdf", results = 'asis', echo = FALSE, sanitize = TRUE, fig.show = 'hold'>>=
+library(xtable)
+
+behav.vars <- c("BASC_AP_HY", "BASC_AP", "BASC_HY", "BRF_ISCI", "BRF_FI", 
+    "BRF_EMI", "BRF_GEC", "BRF_IN", "BRF_SF", "BRF_PO", "BRF_WM", "BRF_EC")
+
+regions <- names(mval.region)
+
+for (i in 12:22){
+	if(length(rownames(mval.region[[i-11]])) != length(regr.region.pvals[[1]][[i]])){
+		stop("dimensions don't match")
+	}
+}
+
+for (i in 1:12){
+##change to site.regr regr.site.pvals
+    names(site.regr[[i]]) <- rownames(hm450)
+    pval.sort <- sort(site.regr[[i]])
+    pval.sig <- pval.sort[1:5]
+    pval.annot <- hm450[names(pval.sig), c(17, 18, 20, 22)]
+    assoc.genes <- data.frame(pval.sig, pval.annot)
+    behav.caption <- gsub("_", "-", behav.vars[i])
+	print(xtable(assoc.genes, digits = -3, caption = behav.caption),
+			sanitize.text.function=function(str)gsub("_"," ",str,fixed=TRUE))
+	}
+
+	cat('\\clearpage\n')
+@
+\end{landscape}
+
+<<sig_genes_in_regions, dev = "pdf", results = 'asis', echo = FALSE, fig.show = 'hold'>>=
+
+for (i in 1:12){
+	for (r in regions){
+		#the rownames of mval.region[[r]] are the gene names for the the first 6 regions
+		#the rownames of the remaining 5 regions correspond chromosomal locations
+		names(regr.region.pvals[[i]][[r]]) <- rownames(mval.region[[r]])
+		#sort the pvalues after assigning each the corresponding gene/chr location
+		pval.sort <- sort(regr.region.pvals[[i]][[r]])
+		#extract the 5 lowest pvalues (names of the gene/ chr loc are automatically extracted)
+		pval.sig <- pval.sort[1:5]
+
+		#find the associated Cpg ids for each signif. gene/ chr loc
+		CpG.sig <- vector(mode="list")
+		for (j in 1:5){
+		CpG.sig[[j]] <- get(r)[['SID']][[names(pval.sig)[j]]]
+		}
+		#convert the CpG id's into a vector
+		CpG.sig <- sapply(CpG.sig, paste, collapse =", ")
+		#create a data frame with the significant pvalues, and associated CpG ids
+		#the rownames of the data frame are the corresponding gene/chr location
+		assoc.genes <- data.frame(pval.sig, CpG.sig)
+
+		#output the table of the top 5 significant genes
+		#xtable requires columns of data frame be a column
+		#create the caption for each table by including the behav. measure and gene region
+		r.caption <- substr(r, 1, nchar(r)-3)
+		behav.caption <- gsub("_", "-", behav.vars[i])
+		capt <- paste(behav.caption, r.caption)
+
+		#output the table
+		tab <- xtable(assoc.genes, digits = -3, caption = capt)
+		print(tab, sanitize.text.function=function(str)gsub("_"," ",str,fixed=TRUE))
+	}
+	cat('\\clearpage\n')
+	cat('\\newpage\n')
+}
+@
+\end{document}

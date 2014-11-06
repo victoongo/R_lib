@@ -12,25 +12,11 @@ We will get an object x.methy450 with slots for the gene region level summary.
 
 <<get_libraries_and_set_options, cache = FALSE, echo = TRUE, include = FALSE>>=
 options(width = 60)
-if(require("IMA")){
-    print("IMA is loaded correctly")
-} else {
-    print("trying to install IMA")
-    install.packages("IMA",repos=c("http://rforge.net"))
-    if(require('IMA')){
-        print('IMA is installed and loaded')
-    } else {
-        stop("could not install IMA")
-    }
-
-}
-#source("http://bioconductor.org/biocLite.R")
-#biocLite("IRanges")
+library(IMA)
 library(xtable)
-library(foreach)
 library(doParallel)
-library(IRanges)
-cl <- makeCluster(6)
+library(foreach)
+cl <- makeCluster(12)
 registerDoParallel(cl)
 
 @
@@ -38,26 +24,19 @@ registerDoParallel(cl)
 <<load_data, cache = TRUE, echo = TRUE, include = TRUE>>=
 #load the mvalues, pvalue, and hm450 matrix
 #hm450 is the complete annotation matrix
-setwd('d:/projects/epi450k')
-
-# subset mvalues and hm450 to size 5k
-#load("MvalueAnalysisStructures.RData")
-#mvalues<-mvalues[1:5000,]
-#hm450<-hm450[1:5000,]
-#save.image("MvalueAnalysisStructures_5000.RData")
-
-
-load("MvalueAnalysisStructures_5000.RData")
+load("/proj/design/il450k/nest13/R/MvalueAnalysisStructures.RData")
 
 dim(mvalues)
 dim(hm450)
 dim(pData)
-#hm450 contains the full annotation information and matches the dimension of hm450
+##annot.full contains the full annotation information 
+##for all the CpG probes in the 450k array
+annot.full <- annot
 rm(annot)
 table(rownames(pData) == pData$nestid)
 
 #load the behavioral scores
-epi<-read.csv("nestsr_iversen_24OCT2014.csv", as.is=TRUE)
+epi<-read.csv("NESTSR_IVERSEN_8_22_15.csv", as.is=TRUE)
 dim(epi)
 length(unique(epi$nestid)) == nrow(epi)
 rownames(epi) <-epi$nestid
@@ -69,7 +48,6 @@ mvalues<-mvalues[,keep]
 epi <- epi[rownames(pData),]
 colnames(epi)[colnames(epi) %in% colnames(pData)]
 pData<-cbind(pData,epi[,colnames(epi) != "nest_id"])
-rm(epi)
 
 #delete rows for which we do not have mother's ADHD data
 keep <- (!is.na(pData$asrs_ADHD))
@@ -104,7 +82,8 @@ pData$prePregBMIthreeLev <-factor(pData$prePregBMIthreeLev, levels = 0:2, labels
 @
 
 <<create_methy450batch_object, cache = TRUE, echo = TRUE, include = TRUE>>=
-##provide the summary statistics for the methy450 object
+##We create a methy450batch object with 15 slots
+##slots: 11 annnotated regions, mvalues, detect_p, annotation, pData
 
 ##create a pDetect matrix
 ##initialize detectP values to one because we don't have the detection scores for the probes
@@ -139,7 +118,7 @@ cat(".......\nSplit the annotation file to 11
         listlength)
     col5 = rep(as.character(annot[, "UCSC_CpG_Islands_Name"]), 
         listlength)
-##we rep the col0, 1, 2, 3 according to how many sites each CpG probe is linked to 
+##we rep the col0, 1, 4, 5 according to how many sites each CpG probe is linked to 
 ##col0 are the indices, col1 are the Cpg probe names, col2 are the names of the
 ##associated genes, col3 are the name of the associated gene regions (exon, etc), 
 ##col4 are CpG site region (i.e. shelf, shore, etc.),
@@ -156,7 +135,7 @@ cat(".......\nSplit the annotation file to 11
         returnPID = lapply(temp, unique)
         return(Ind = list(SID = returnSID, PID = returnPID))
     }
-##First list of summary stats: grouped by associated genes
+##First list of summary stats indexed by associated genes
     TSS1500Ind = splitToRegionlist(grepname = "TSS1500")
     TSS200Ind = splitToRegionlist(grepname = "TSS200")
     UTR5Ind = splitToRegionlist(grepname = "5'UTR")
@@ -172,7 +151,7 @@ cat(".......\nSplit the annotation file to 11
         length(GENEBODYInd$SID), "UCSC REFGENE region\n3'UTR region contains:", 
         length(UTR3Ind$SID), "UCSC REFGENE region\n", fill = TRUE)
 
-##Second list of summary stats: grouped by chromosomal regions
+##Second list of summary stats indexed by chromosomal regions
     splitToRegionlist2 = function(grepname = c("Island", "N_Shore", 
         "S_Shore", "N_Shelf", "S_Shelf")) {
         index = col4 == grepname
@@ -213,6 +192,7 @@ cat(".......\nSplit the annotation file to 11
     cat("\nA methy450batch class is created and the slotNames are:\n", 
         slotNames(x.methy450), "\n", fill = TRUE) 
 
+<<print_x.methy450, cache = TRUE, echo = TRUE, include = TRUE>>
 ##check the length of the regions 
 	for (slot in slotNames(x.methy450)){
         if(grepl('Ind', slot, ignore.case = TRUE)){
@@ -227,33 +207,35 @@ cat(".......\nSplit the annotation file to 11
 @
 
 <<summary_statistics, cache = TRUE, echo = TRUE, include = TRUE>>=
-#Get a matrix for each region with the mean m-values
+#create a list of matrices using the 11 region level summaries from the methy450 object
+#to do: remove ind and change name
+mval.region = list()
 
-mval.reg = list()
-
+#loop throug slots in methy450batch object
 for (s in slotNames(x.methy450)){
     if(grepl('Ind', s, ignore.case = TRUE)){
         obj <- slot(x.methy450, s)
         #delete 'Ind' at the end of each region name
-        name <- substr(s, 1, nchar(s)-3)
-        mval.reg[[s]] <- indexregionfunc(indexlist= obj,
+        #name <- substr(s, 1, nchar(s)-3)
+        mval.region[[s]] <- indexregionfunc(indexlist= obj,
             beta=x.methy450@bmatrix, indexmethod="median")
     }
 }
 
-length(mval.reg)
-names(mval.reg)
+length(mval.region)
+names(mval.region)
 @
 
-<<regression, cache = TRUE, echo = FALSE, include = TRUE, eval = TRUE>>=
+<<set_y_vals_for_reg, cache = TRUE, echo = FALSE, include = TRUE, eval = TRUE>>=
 dim(mvalues)
 #create BASC_AP_HY composite score
 pData$BASC_AP_HY <- rowMeans(cbind(pData$BASC_AP, pData$BASC_HY))
 #behavioral scores
 y_vars <- c("BASC_AP_HY", "BASC_AP", "BASC_HY", "BRF_ISCI", "BRF_FI", 
-    "BRF_EMI", "BRF_GEC", "BRF_IN", "BRF_SF")
+    "BRF_EMI", "BRF_GEC", "BRF_IN", "BRF_SF", "BRF_PO", "BRF_WM", "BRF_EC")
 
-lmbehav <- function(m, pdat, bhv.score) {
+<<regr_func, cache = TRUE, echo = FALSE, include = TRUE, eval = TRUE>>=
+lm.cpgsite <- function(m, pdat, bhv.score) {
     cntrl <- c("~pdat$age_mo_SR_Surv", "sex", "birthwt_kg", 
     "GestAge_weeks", "education_3cat", "Race3", "parity_3cat", 
     "mom_age_delv", "prePregBMIthreeLev", "asrs_ADHD_2cat")
@@ -269,68 +251,20 @@ lmbehav <- function(m, pdat, bhv.score) {
     }
     # lm.out <- lm(pdat$BASC_AP_HY~pdat$age_mo_SR_Surv+pdat$sex+pdat$birthwt_kg+
     #      pdat$GestAge_weeks+pdat$education_3cat+pdat$Race3+pdat$parity_3cat+
-    #      pdat$mom_age_delv+pdat$prePregBMIthreeLev+pdat$asrs_ADHD_2cat, data = pdat)
+    #      pdat$mom_age_delv+pdat$prePregBMIthreeLev+pdat$asrs_ADHD_2cat+pdat$mval, data = pdat)
     
     return(pval)
 }
-
-#initialize the column we will use to store the methylation value one site at a time
-pData$mval <- NA
-
-site.regr <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lmbehav(mvalues, pData, y)}
-length(site.regr)
-names(site.regr)
-attributes(site.regr)
 @
 
-<<pv_plots, cache = TRUE, eval = TRUE>>=
-pvplot<-function(pvs,titl){
-    nlogpv<-sort(-log10(pvs[!is.na(pvs)]))
-    n.use<-length(nlogpv)
-    expctd<-((1:n.use)-0.5)/n.use
-    expctd<-sort(-log10(expctd))
-    ##  lambda<-summary(lm(nlogpv[1:2000]~expctd[1:2000]))$coefficients[2,1]
-    par(pty="s")
-    thin<-seq(1,n.use,by=1)
-    if (n.use>10000) thin<-c(seq(1,floor(0.5*n.use),by=100),seq(floor(0.5*n.use),floor(0.75*n.use),by=10),
-                            seq(floor(0.75*n.use),floor(0.95*n.use),by=2),seq(floor(0.95*n.use),n.use,by=1))
-    if (n.use>100000) thin<-c(seq(1,floor(0.5*n.use),by=1000),seq(floor(0.5*n.use),floor(0.75*n.use),by=100),
-                            seq(floor(0.75*n.use),floor(0.95*n.use),by=10),seq(floor(0.95*n.use),n.use,by=1))
-    plot(nlogpv[thin],expctd[thin],pch=16,main=titl,las=1,
-       cex=1.5,xlab="observed -log10(pv)",ylab="expected -log10(pv)")
-    ## text(x=0.5,y=3.5,labels=paste("lambda =",round(lambda,3),sep=" "))
-    legend(x="topleft",inset=0.05,
-         legend=c("95% Pointwise Interval Under Null","Expected Under Null"),
-         lty=c(1,1),col=c(3,2),lwd=c(4,4),cex=0.75)
-    abline(a=0,b=1,col=2,lwd=2)
-    q0.025allc<-numeric(n.use)
-    q0.975allc<-numeric(n.use)
-    ##q0.025ballc<-numeric(n.use)
-    ##q0.975ballc<-numeric(n.use)
-    ##bonf.adj<-n.use
-    for (i in 1:n.use){
-    q0.025allc[i]<-qbeta(0.025,shape1=i,shape2=(n.use-i+1))
-    q0.975allc[i]<-qbeta((1-0.025),shape1=i,shape2=(n.use-i+1))
-    ##q0.025ballc[i]<-qbeta(0.025/bonf.adj,shape1=i,shape2=(n.use-i+1))
-    ##q0.975ballc[i]<-qbeta((1-0.025/bonf.adj),shape1=i,shape2=(n.use-i+1))
-    }
-    lines(sort(-log10(q0.025allc))[thin],expctd[thin],lwd=3,col=3)
-    lines(sort(-log10(q0.975allc))[thin],expctd[thin],lwd=3,col=3)
-    ##lines(sort(-log10(q0.025ballc)),expctd,lwd=3,col=4)
-    ##lines(sort(-log10(q0.975ballc)),expctd,lwd=3,col=4)
-    return(NULL)
-}
-    for (i in 1:9){
-        pvplot(site.regr[[i]], y_vars[i])
-    }
-@
-
-<<fn_to_iterate_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = TRUE>>=
+<<fn_region_level_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = TRUE>>=
 #We need to combine the y_vals in the data frame and regress them at the same time
-#We need to combine the x_vals in the 
-behav_score <- pData[y_vars]
+##behav_score <- pData[y_vars]
+cntrl <- c("~pdat$age_mo_SR_Surv", "sex", "birthwt_kg", 
+"GestAge_weeks", "education_3cat", "Race3", "parity_3cat", 
+"mom_age_delv", "prePregBMIthreeLev", "asrs_ADHD_2cat")
 
-lmbehav2 <- function(m, pdat, scores) {
+lm.regions <- function(m, pdat, scores) {
     cntrl <- c("~pdat$age_mo_SR_Surv", "sex", "birthwt_kg", 
     "GestAge_weeks", "education_3cat", "Race3", "parity_3cat", 
     "mom_age_delv", "prePregBMIthreeLev", "asrs_ADHD_2cat")
@@ -342,39 +276,45 @@ lmbehav2 <- function(m, pdat, scores) {
     fmla<-paste("pdat$", scores, 
         paste(cntrl, collapse = "+pdat$"), "+pdat$mval", sep = "")
 
-    pv.reg <- vector(mode = "list", length = 11)
-    names(pv.reg) <- regions
+    pval <- vector(mode = "list", length = 11)
+    names(pval) <- regions
 #regress against the methylation values at each region
 #do this for each of the 11 region categories
     for (r in names(m)){
         n_probes <- dim(m[[r]])[1]
-        pv.reg[[j]] <- vector(mode= "numeric", length = n_probes)
+        pval[[r]] <- vector(mode= "numeric", length = n_probes)
         for (i in 1:n_probes) {
             pdat$mval <- m[[r]][i,]
             lm.out <- lm(as.formula(fmla), data = pdat)
-            pv.reg[[r]][i] <- coef(summary(lm.out))["pdat$mval", "Pr(>|t|)"]
+            pval[[r]][i] <- coef(summary(lm.out))["pdat$mval", "Pr(>|t|)"]
         }
     }
-    return(pv.reg)
+    return(pval)
 }
 @
 
-<<iterate_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = FALSE>>=
-#region based regression
-reg.rgr <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lmbehav2(mval.reg, pData, y)}
+<<site_level_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = TRUE>>=
+#initialize the column we will use to store the methylation value one site at a time
+pData$mval <- NA
+
+regr.site.pv <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lm.cpgsite(mvalues, pData, y)}
 @
 
-<<plots_of_p.sumryregr, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = FALSE>>=
+<<region_level_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = FALSE>>=
 
-reg <- c("exon1", "genebody", "island", 
-    "nshelf", "nshore", "sshelf", "sshore",
-    "tss1500", "tss200", "utr3", "utr5")
+#the parallelized structure loops over the 12 behavioral scores
+#the function has 2 loops: 
+#over each of the 11 regions and the methylation values within each of those regions
 
-for (i in 1:9){
-    for (r in reg){
-    pvplot(p.sumryregr[[i]][[r]], paste(y_vars[[i]], r))
-    }
-}
+regr.region.pv <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lm.regions(mval.region, pData, y)}
 @
 
+<<region_regr_summary, cache = TRUE, eval = TRUE>>=
+length(regr.site.pv)
+names(regr.site.pv) <- y_vars
+attributes(regr.site.pv)
+
+names(regr.region.pv) <- y_vars
+length(regr.region.pv)
+@
 \end{document}

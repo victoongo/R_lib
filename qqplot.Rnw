@@ -1,0 +1,17 @@
+\documentclass[12pt]{article}
+
+\usepackage{times}
+\usepackage[cm]{fullpage}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+<<qqplot, cache = TRUE, echo = TRUE, include = TRUE>>=
+y_vars <- c("BASC_AP_HY", "BASC_AP", "BASC_HY", "BRF_ISCI", "BRF_FI", 
+    "BRF_EMI", "BRF_GEC", "BRF_IN", "BRF_SF", "BRF_PO", "BRF_WM", "BRF_EC")
+
+hist(pData$BRF_GEC)
+@
+\end{document}
