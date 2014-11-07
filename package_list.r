@@ -8,7 +8,7 @@ install.packages('doParallel')
 # Presenting Info
 install.packages('xtable')
 install.packages('R2HTML')
-install.packages('Shiny')
+install.packages('shiny')
 install.packages('knitr')
 
 # Viz
@@ -24,3 +24,15 @@ install.packages('GGally')
 
 # Machine Learning
 install.packages('randomForest')
+
+# epi450k
+source("http://bioconductor.org/biocLite.R")
+biocLite("limma")
+biocLite("bioDist")
+biocLite("preprocessCore")
+biocLite("dplR")
+
+install.packages('WriteXLS')
+install.packages('XML')
+install.packages('gmp')
+install.packages("IMA",repos=c("http://rforge.net"))
