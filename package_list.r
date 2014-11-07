@@ -15,6 +15,7 @@ install.packages('knitr')
 install.packages('ggplot2')
 install.packages('qqman')
 install.packages('mhtplot2') # older R only
+install.packages('gclus')
 
 # Data Mining
 install.packages('rpart')
@@ -31,8 +32,13 @@ biocLite("limma")
 biocLite("bioDist")
 biocLite("preprocessCore")
 biocLite("dplR")
+  install.packages('XML')
+  install.packages('gmp')
 
 install.packages('WriteXLS')
-install.packages('XML')
-install.packages('gmp')
-install.packages("IMA",repos=c("http://rforge.net"))
+install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in Windows
+
+# PCA (prcomp and varimax)
+
+# MLM
+install.packages('car')
