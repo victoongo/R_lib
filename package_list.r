@@ -1,14 +1,19 @@
-# CPU
-install.packages('doParallel')
 
-# GPU
-#install.packages('WideLM') # older R only
-#install.packages('gputools')
+
+# HP: big
+install.packages('biglm')
+
+  # CPU
+  install.packages('doParallel')
+  
+  # GPU
+  #install.packages('WideLM') # older R only
+  #install.packages('gputools')
 
 # Presenting Info
 install.packages('xtable')
 install.packages('R2HTML')
-install.packages('Shiny')
+install.packages('shiny')
 install.packages('knitr')
 
 # Viz
@@ -24,3 +29,7 @@ install.packages('GGally')
 
 # Machine Learning
 install.packages('randomForest')
+
+# DB
+install.packages('sqldf')
+install.packages('RSQLite')
