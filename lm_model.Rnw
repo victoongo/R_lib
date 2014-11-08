@@ -38,7 +38,7 @@ registerDoParallel(cl)
 <<load_data, cache = TRUE, echo = TRUE, include = TRUE>>=
 #load the mvalues, pvalue, and hm450 matrix
 #hm450 is the complete annotation matrix
-setwd('d:/projects/epi450k')
+setwd('~/epi450k')
 
 # subset mvalues and hm450 to size 5k
 #load("MvalueAnalysisStructures.RData")
