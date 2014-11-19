@@ -31,8 +31,26 @@ biocLite("limma")
 biocLite("bioDist")
 biocLite("preprocessCore")
 biocLite("dplR")
+biocLite("rhdf5")
 
 install.packages('WriteXLS')
 install.packages('XML')
 install.packages('gmp')
 install.packages("IMA",repos=c("http://rforge.net"))
+
+# 
+install.packages('data.table')
+install.packages('xlsx')
+install.packages('Rcurl')
+install.packages('httr')
+install.packages('jsonlite')
+install.packages('jpeg','readbitmap','png')
+install.packages('rdgal','rgeos','raster')
+install.packages('tuneR','seewave')
+install.packages('')
+
+
+# 10 list
+install.packages('sqldf','forecast','plyr','stringr','lubridate','qcc','reshape2','randomForest') #install.packages('stringi')
+install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
+

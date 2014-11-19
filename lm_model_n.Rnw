@@ -16,7 +16,7 @@ library(IMA)
 library(xtable)
 library(doParallel)
 library(foreach)
-cl <- makeCluster(12)
+cl <- makeCluster(4)
 registerDoParallel(cl)
 
 @
@@ -24,7 +24,9 @@ registerDoParallel(cl)
 <<load_data, cache = TRUE, echo = TRUE, include = TRUE>>=
 #load the mvalues, pvalue, and hm450 matrix
 #hm450 is the complete annotation matrix
-load("/proj/design/il450k/nest13/R/MvalueAnalysisStructures.RData")
+setwd('~/epi450k')
+load("MvalueAnalysisStructures_5000.RData")
+#load("/proj/design/il450k/nest13/R/MvalueAnalysisStructures.RData")
 
 dim(mvalues)
 dim(hm450)
@@ -36,7 +38,7 @@ rm(annot)
 table(rownames(pData) == pData$nestid)
 
 #load the behavioral scores
-epi<-read.csv("NESTSR_IVERSEN_8_22_15.csv", as.is=TRUE)
+epi<-read.csv("nestsr_iversen_24OCT2014.csv", as.is=TRUE)
 dim(epi)
 length(unique(epi$nestid)) == nrow(epi)
 rownames(epi) <-epi$nestid
