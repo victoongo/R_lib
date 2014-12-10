@@ -1,0 +1,11 @@
+nice +2 Rscript -e "kintr::knit2pdf('demo.Rnw')"
+gene_table_mlm
+mlm
+mlm_table
+pvplot_region
+pvplot_mlm
+mlm_region
+mlm_table2
+
+vncserver :36 -geometry 1750x950
+

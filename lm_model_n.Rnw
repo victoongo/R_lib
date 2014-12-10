@@ -21,7 +21,7 @@ registerDoParallel(cl)
 
 @
 
-<<load_data, cache = TRUE, echo = TRUE, include = TRUE>>=
+<<load_data, cache = FALSE, echo = TRUE, include = TRUE>>=
 #load the mvalues, pvalue, and hm450 matrix
 #hm450 is the complete annotation matrix
 setwd('~/epi450k')
@@ -29,8 +29,8 @@ load("MvalueAnalysisStructures_5000.RData")
 #load("/proj/design/il450k/nest13/R/MvalueAnalysisStructures.RData")
 
 dim(mvalues)
-dim(hm450)
-dim(pData)
+dim(hm450)xx
+dim(pData)x
 ##annot.full contains the full annotation information 
 ##for all the CpG probes in the 450k array
 annot.full <- annot
@@ -83,7 +83,7 @@ pData$prePregBMIthreeLev[(!is.na(pData$BMI_LMP_kgm2)) & (pData$BMI_LMP_kgm2>=35)
 pData$prePregBMIthreeLev <-factor(pData$prePregBMIthreeLev, levels = 0:2, labels = c("Lt30", "30toLt35", "Ge35"))
 @
 
-<<create_methy450batch_object, cache = TRUE, echo = TRUE, include = TRUE>>=
+<<create_methy450batch_object, cache = FALSE, echo = TRUE, include = TRUE>>=
 ##We create a methy450batch object with 15 slots
 ##slots: 11 annnotated regions, mvalues, detect_p, annotation, pData
 
@@ -194,7 +194,7 @@ cat(".......\nSplit the annotation file to 11
     cat("\nA methy450batch class is created and the slotNames are:\n", 
         slotNames(x.methy450), "\n", fill = TRUE) 
 
-<<print_x.methy450, cache = TRUE, echo = TRUE, include = TRUE>>
+<<print_x.methy450, cache = FALSE, echo = TRUE, include = TRUE>>
 ##check the length of the regions 
 	for (slot in slotNames(x.methy450)){
         if(grepl('Ind', slot, ignore.case = TRUE)){
@@ -302,16 +302,16 @@ pData$mval <- NA
 regr.site.pv <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lm.cpgsite(mvalues, pData, y)}
 @
 
-<<region_level_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = TRUE, echo = TRUE, eval = FALSE>>=
+<<region_level_regression, dev = 'pdf', fig.width=4, fig.height=4, cache = FALSE, echo = TRUE, eval = TRUE>>=
 
 #the parallelized structure loops over the 12 behavioral scores
-#the function has 2 loops: 
+#the function has 2 loops
 #over each of the 11 regions and the methylation values within each of those regions
 
 regr.region.pv <- foreach (y = y_vars, .verbose = TRUE) %dopar% {lm.regions(mval.region, pData, y)}
 @
 
-<<region_regr_summary, cache = TRUE, eval = TRUE>>=
+<<region_regr_summary, cache = FALSE, eval = TRUE>>=
 length(regr.site.pv)
 names(regr.site.pv) <- y_vars
 attributes(regr.site.pv)

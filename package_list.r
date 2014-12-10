@@ -1,3 +1,6 @@
+# working with other language
+install.packages('rpy2')
+
 # CPU
 install.packages('doParallel')
 
