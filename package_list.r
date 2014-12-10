@@ -78,4 +78,7 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
 # MLM
 install.packages('car')
 
+# SITAR
+install.packages('sitar')
+
 
