@@ -4,9 +4,16 @@ install.packages('rpy2')
 # CPU
 install.packages('doParallel')
 
-# GPU
-#install.packages('WideLM') # older R only
-#install.packages('gputools')
+
+# HP: big
+install.packages('biglm')
+
+  # CPU
+  install.packages('doParallel')
+  
+  # GPU
+  #install.packages('WideLM') # older R only
+  #install.packages('gputools')
 
 # Presenting Info
 install.packages('xtable')
@@ -18,6 +25,7 @@ install.packages('knitr')
 install.packages('ggplot2')
 install.packages('qqman')
 install.packages('mhtplot2') # older R only
+install.packages('gclus')
 
 # Data Mining
 install.packages('rpart')
@@ -28,17 +36,21 @@ install.packages('GGally')
 # Machine Learning
 install.packages('randomForest')
 
+# DB
+install.packages('sqldf')
+install.packages('RSQLite')
+
 # epi450k
 source("http://bioconductor.org/biocLite.R")
 biocLite("limma")
 biocLite("bioDist")
 biocLite("preprocessCore")
 biocLite("dplR")
+  install.packages('XML')
+  install.packages('gmp')
 biocLite("rhdf5")
 
 install.packages('WriteXLS')
-install.packages('XML')
-install.packages('gmp')
 install.packages("IMA",repos=c("http://rforge.net"))
 
 # 
@@ -56,4 +68,14 @@ install.packages('')
 # 10 list
 install.packages('sqldf','forecast','plyr','stringr','lubridate','qcc','reshape2','randomForest') #install.packages('stringi')
 install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
+
+
+install.packages('WriteXLS')
+install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in Windows
+
+# PCA (prcomp and varimax)
+
+# MLM
+install.packages('car')
+
 
