@@ -66,7 +66,10 @@ install.packages('')
 
 
 # 10 list
-install.packages('sqldf','forecast','plyr','stringr','lubridate','qcc','reshape2','randomForest') #install.packages('stringi')
+install.packages('sqldf') # pandasql for python
+install.packages('forecast')
+install.packages('plyr','stringr','lubridate')
+install.packages('qcc','reshape2','randomForest') #install.packages('stringi')
 install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
 
 
