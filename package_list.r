@@ -83,5 +83,6 @@ install.packages('car')
 
 # SITAR
 install.packages('sitar')
+install.packages('quantreg')
 
 
