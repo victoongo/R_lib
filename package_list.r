@@ -86,5 +86,9 @@ install.packages('car')
 # SITAR
 install.packages('sitar')
 install.packages('quantreg')
+install.packages('gamlss')
+install.packages('nlme')
+install.packages('lme4')
+install.packages('multcomp')
 
 
