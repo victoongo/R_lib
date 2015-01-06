@@ -58,7 +58,7 @@ install.packages("IMA",repos=c("http://rforge.net"))
 # 
 install.packages('data.table')
 install.packages('xlsx')
-install.packages('Rcurl')
+install.packages('RCurl')
 install.packages('httr')
 install.packages('jsonlite')
 install.packages('jpeg','readbitmap','png')
@@ -70,8 +70,8 @@ install.packages('')
 # 10 list
 install.packages('sqldf') # pandasql for python
 install.packages('forecast')
-install.packages('plyr','stringr','lubridate')
-install.packages('qcc','reshape2','randomForest') #install.packages('stringi')
+install.packages('plyr','stringr','lubridate') #install.packages('stringi')
+install.packages('qcc','reshape2','randomForest') 
 install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
 
 
