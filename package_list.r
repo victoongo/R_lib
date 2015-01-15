@@ -1,10 +1,12 @@
 # data manipulation
+install.packages('doBy')
 
 # working with other language
 install.packages('rpy2')
 
 # CPU
 install.packages('doParallel')
+install.packages('multicore')
 
 
 # HP: big
@@ -34,6 +36,8 @@ install.packages('rpart')
 install.packages('party')
 install.packages('DMwR')
 install.packages('GGally')
+install.packages('tm')
+install.packages('wordcloud')
 
 # Machine Learning
 install.packages('randomForest')
