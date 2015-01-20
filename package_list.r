@@ -87,6 +87,9 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
 # MLM
 install.packages('car')
 
+# Bayesian
+install.packages('MCMCpack')
+
 # SITAR
 install.packages('sitar')
 install.packages('quantreg')
