@@ -1,19 +1,22 @@
 # data manipulation
 install.packages('doBy')
+install.packages('Hmisc')
+install.packages('dplyr')
+install.packages('tidyr')
+install.packages('sqldf')
+install.packages('plyr','stringr','lubridate') 
+install.packages('reshape2')
 
 # working with other language
 install.packages('rpy2')
 
-# CPU
-install.packages('doParallel')
-install.packages('multicore')
-
-
-# HP: big
-install.packages('biglm')
+# HP: 
+  # mem
+  install.packages('biglm')
 
   # CPU
   install.packages('doParallel')
+  install.packages('multicore')
   
   # GPU
   #install.packages('WideLM') # older R only
@@ -30,6 +33,9 @@ install.packages('ggplot2')
 install.packages('qqman')
 install.packages('mhtplot2') # older R only
 install.packages('gclus')
+install.packages('RColorBrewer')
+install.packages('maps')
+install.packages('ggvis')
 
 # Data Mining
 install.packages('rpart')
@@ -45,6 +51,7 @@ install.packages('randomForest')
 # DB
 install.packages('sqldf')
 install.packages('RSQLite')
+install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
 
 # epi450k
 source("http://bioconductor.org/biocLite.R")
@@ -59,17 +66,18 @@ biocLite("rhdf5")
 install.packages('WriteXLS')
 install.packages("IMA",repos=c("http://rforge.net"))
 
-# 
+# data types
 install.packages('data.table')
 install.packages('xlsx')
-install.packages('RCurl')
-install.packages('httr')
 install.packages('jsonlite')
 install.packages('jpeg','readbitmap','png')
 install.packages('rdgal','rgeos','raster')
 install.packages('tuneR','seewave')
 install.packages('')
 
+# network
+install.packages('RCurl')
+install.packages('httr')
 
 # 10 list
 install.packages('sqldf') # pandasql for python
@@ -97,5 +105,4 @@ install.packages('gamlss')
 install.packages('nlme')
 install.packages('lme4')
 install.packages('multcomp')
-
 

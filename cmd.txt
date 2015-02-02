@@ -9,3 +9,5 @@ mlm_table2
 
 vncserver :36 -geometry 1750x950
 
+R CMD INSTALL .
+
