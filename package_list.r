@@ -4,20 +4,20 @@ install.packages('Hmisc')
 install.packages('dplyr')
 install.packages('tidyr')
 install.packages('sqldf')
-install.packages('plyr','stringr','lubridate') 
+install.packages('plyr','stringr','lubridate')
 install.packages('reshape2')
 
 # working with other language
 install.packages('rpy2')
 
-# HP: 
+# HP:
   # mem
   install.packages('biglm')
 
   # CPU
   install.packages('doParallel')
   install.packages('multicore')
-  
+
   # GPU
   #install.packages('WideLM') # older R only
   #install.packages('gputools')
@@ -69,6 +69,7 @@ install.packages("IMA",repos=c("http://rforge.net"))
 # data types
 install.packages('data.table')
 install.packages('xlsx')
+install.packages('XLConnect')
 install.packages('jsonlite')
 install.packages('jpeg','readbitmap','png')
 install.packages('rdgal','rgeos','raster')
@@ -83,7 +84,7 @@ install.packages('httr')
 install.packages('sqldf') # pandasql for python
 install.packages('forecast')
 install.packages('plyr','stringr','lubridate') #install.packages('stringi')
-install.packages('qcc','reshape2','randomForest') 
+install.packages('qcc','reshape2','randomForest')
 install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
 
 

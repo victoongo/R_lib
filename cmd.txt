@@ -9,5 +9,10 @@ mlm_table2
 
 vncserver :36 -geometry 1750x950
 
+# to build the R package from source in local folder
 R CMD INSTALL .
 
+# login using ssh to server
+ssh -l user address
+
+scp your_username@remotehost.edu:foobar.txt /some/local/directory
