@@ -24,11 +24,11 @@ df = read.xls ("myfile.xlsx"), sheet = 1, header = TRUE)
 # it doesn't support .xlsx files and this is not acceptable nowadays. Furthermore, it uses
 # proprietary third party code and it should be downloaded from GitHub, CRAN cannot host it.
 # It is available for Windows only.
-
-require(xlsReadWrite)
-xls.getshlib()
-df = read.xls("myfile.xls", sheet = 1)
-
+if (FALSE) {
+  require(xlsReadWrite)
+  xls.getshlib()
+  df = read.xls("myfile.xls", sheet = 1)
+}
 # XLConnect package
 # XLConnect is a Java-based solution, so it is cross platform and returns satisfactory results.
 # For large data sets it may be very slow.
