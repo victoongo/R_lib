@@ -47,6 +47,9 @@ install.packages('wordcloud')
 
 # Machine Learning
 install.packages('randomForest')
+install.packages('caret')
+install.packages('e1071', dependencies=TRUE)
+install.packages('AppliedPredictiveModeling')
 
 # DB
 install.packages('sqldf')
