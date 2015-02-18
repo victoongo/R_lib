@@ -50,6 +50,10 @@ install.packages('randomForest')
 install.packages('caret')
 install.packages('e1071', dependencies=TRUE)
 install.packages('AppliedPredictiveModeling')
+install.packages('rpart.plot')
+install.packages('rattle')
+install.packages('pgmm')
+install.packages('tree')
 
 # DB
 install.packages('sqldf')
