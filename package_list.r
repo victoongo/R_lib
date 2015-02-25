@@ -1,3 +1,6 @@
+install.packages("devtools")
+
+
 # data manipulation
 install.packages('doBy')
 install.packages('Hmisc')
@@ -11,6 +14,13 @@ install.packages('reshape2')
 install.packages('rpy2')
 
 # HP:
+  # cluster computing
+  library(devtools)
+  install_github("amplab-extras/SparkR-pkg", subdir="pkg")
+  SPARK_VERSION=1.3.0 ./install-dev.sh
+  SPARK_HADOOP_VERSION=2.0.0-mr1-cdh4.2.0 ./install-dev.sh
+  USE_MAVEN=1 ./install-dev.sh
+
   # mem
   install.packages('biglm')
 
@@ -25,8 +35,17 @@ install.packages('rpy2')
 # Presenting Info
 install.packages('xtable')
 install.packages('R2HTML')
-install.packages('shiny')
 install.packages('knitr')
+install.packages('googleVis')
+library(devtools)
+install_github('shiny', 'rstudio')
+install_github('rstudio/shinyapps')
+install_github('ramnathv/rCharts')
+
+library(devtools)
+install_github('slidify', 'ramnathv')
+install_github('slidifyLibraries', 'ramnathv')
+
 
 # Viz
 install.packages('ggplot2')
@@ -54,6 +73,7 @@ install.packages('rpart.plot')
 install.packages('rattle')
 install.packages('pgmm')
 install.packages('tree')
+install.packages('ElemStatLearn')
 
 # DB
 install.packages('sqldf')
@@ -69,6 +89,7 @@ biocLite("dplR")
   install.packages('XML')
   install.packages('gmp')
 biocLite("rhdf5")
+biocLite("qvalue")
 
 install.packages('WriteXLS')
 install.packages("IMA",repos=c("http://rforge.net"))
@@ -98,19 +119,27 @@ install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
 install.packages('WriteXLS')
 install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in Windows
 
-# PCA (prcomp and varimax)
-
-# MLM
-install.packages('car')
-
-# Bayesian
-install.packages('MCMCpack')
-
-# SITAR
-install.packages('sitar')
-install.packages('quantreg')
-install.packages('gamlss')
-install.packages('nlme')
-install.packages('lme4')
-install.packages('multcomp')
-
+# Stats
+  # PCA (prcomp and varimax)
+  # MISC
+  install.packages('bootstrap')
+  install.packages('leaps')
+  # diagnostic
+  install.packages('DAAG')
+  install.packages('relaimpo')
+  
+  # MLM
+  install.packages('car')
+  
+  # Bayesian
+  install.packages('MCMCpack')
+  
+  # SITAR
+  install.packages('sitar')
+  install.packages('quantreg')
+  install.packages('gamlss')
+  install.packages('nlme')
+  install.packages('lme4')
+  install.packages('multcomp')
+  
+install.packages('UsingR')
