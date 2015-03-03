@@ -1,0 +1,34 @@
+---
+title: "Variable List for DAS and WASI II"
+author: "Victor Wang"
+date: "03/03/2015"
+output: html_document
+---
+
+### Variable List for DAS and WASI II
+
+```{r echo=FALSE, results='asis'}
+# library(reshape2)
+# library(xtable)
+# setwd('~/Projects/R_lib/niches/data')
+sasnames <- read.csv('sasvarnames.txt', header=F)
+sasnames$V1 <- gsub("^\tlabel ", "", sasnames$V1)
+sasnames$V1 <- gsub(";$", "", sasnames$V1)
+sasnames$V1 <- gsub("'$", "", sasnames$V1)
+# sasnames <- data.frame(strsplit(sasnames$V1, "="))
+sasnames <- strsplit(sasnames$V1, "='", fixed=T)
+sas1 <- sapply(sasnames, function(x) x[1])
+sas2 <- sapply(sasnames, function(x) x[2])
+sas <- data.frame(cbind(sas1, sas2))
+names(sas) <- c("VarName", "VarLabel")
+
+sasmerge <- merge(sas, dictdaswasi, by.x="VarName", by.y="Var.Nam", all.x=TRUE)
+
+des.table <- xtable(sas, include.rownames=T)
+print(des.table, type='html')
+
+varnames <- as.character(sas[,1])
+varnames <- paste(varnames, collapse=" ")
+write.csv(varnames, 'varnames.csv')
+
+```

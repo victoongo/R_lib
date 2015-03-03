@@ -51,6 +51,7 @@ install_github('slidifyLibraries', 'ramnathv')
 install.packages('ggplot2')
 install.packages('qqman')
 install.packages('mhtplot2') # older R only
+install.packages('gap')
 install.packages('gclus')
 install.packages('RColorBrewer')
 install.packages('maps')
