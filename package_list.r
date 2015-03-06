@@ -128,13 +128,20 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   # diagnostic
   install.packages('DAAG')
   install.packages('relaimpo')
-  
+
   # MLM
   install.packages('car')
-  
+
   # Bayesian
   install.packages('MCMCpack')
-  
+  install.packages('BAS') # removed from CRAN, couldn't fine hlasso
+  install.packages('BMA')
+  install_github('merliseclyde/oda')
+  install.packages('gglasso')
+  install.packages('genlasso')
+
+  # penalized likelihood
+
   # SITAR
   install.packages('sitar')
   install.packages('quantreg')
@@ -142,5 +149,5 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   install.packages('nlme')
   install.packages('lme4')
   install.packages('multcomp')
-  
+
 install.packages('UsingR')
