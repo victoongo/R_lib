@@ -9,6 +9,7 @@ install.packages('tidyr')
 install.packages('sqldf')
 install.packages('plyr','stringr','lubridate')
 install.packages('reshape2')
+install.packages('pryr')
 
 # working with other language
 install.packages('rpy2')
@@ -38,9 +39,11 @@ install.packages('R2HTML')
 install.packages('knitr')
 install.packages('googleVis')
 library(devtools)
-install_github('shiny', 'rstudio')
+install_github('rstudio/shiny')
 install_github('rstudio/shinyapps')
 install_github('ramnathv/rCharts')
+install_github('rstudio/DT')
+install_github('rstudio/leaflet')
 
 library(devtools)
 install_github('slidify', 'ramnathv')
@@ -128,6 +131,7 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   # diagnostic
   install.packages('DAAG')
   install.packages('relaimpo')
+  install.packages('gvlma')
 
   # MLM
   install.packages('car')

@@ -1,0 +1,6 @@
+library(data.table)
+library(pryr)
+dt <- data.table(x=1:1000000+rnorm(1000000),y=1:1000000+rnorm(1000000))
+df <- data.frame(x=1:1000000+rnorm(1000000),y=1:1000000+rnorm(1000000))
+object_size(df)
+object_size(dt)
