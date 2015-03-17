@@ -1,5 +1,5 @@
 install.packages("devtools")
-
+install.packages('Rprof')
 
 # data manipulation
 install.packages('doBy')
@@ -7,7 +7,10 @@ install.packages('Hmisc')
 install.packages('dplyr')
 install.packages('tidyr')
 install.packages('sqldf')
-install.packages('plyr','stringr','lubridate')
+install.packages('plyr')
+install.packages('stringr')
+install.packages('lubridate')
+install.packages('timeDate')
 install.packages('reshape2')
 install.packages('pryr')
 
@@ -78,11 +81,12 @@ install.packages('rattle')
 install.packages('pgmm')
 install.packages('tree')
 install.packages('ElemStatLearn')
+install.packages('forecast')
 
 # DB
 install.packages('sqldf')
 install.packages('RSQLite')
-install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
+install.packages(c('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo'))
 
 # epi450k
 source("http://bioconductor.org/biocLite.R")
@@ -103,9 +107,9 @@ install.packages('data.table')
 install.packages('xlsx')
 install.packages('XLConnect')
 install.packages('jsonlite')
-install.packages('jpeg','readbitmap','png')
-install.packages('rdgal','rgeos','raster')
-install.packages('tuneR','seewave')
+install.packages(c('jpeg','readbitmap','png'))
+install.packages(c('rdgal','rgeos','raster'))
+install.packages(c('tuneR','seewave'))
 install.packages('')
 
 # network
@@ -115,9 +119,9 @@ install.packages('httr')
 # 10 list
 install.packages('sqldf') # pandasql for python
 install.packages('forecast')
-install.packages('plyr','stringr','lubridate') #install.packages('stringi')
-install.packages('qcc','reshape2','randomForest')
-install.packages('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo')
+install.packages(c('plyr','stringr','lubridate')) #install.packages('stringi')
+install.packages(c('qcc','reshape2','randomForest'))
+install.packages(c('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo'))
 
 
 install.packages('WriteXLS')
