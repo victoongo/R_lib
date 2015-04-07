@@ -9,22 +9,13 @@ setwd('~/Dropbox/Projects/R_lib/niches/data')
 source('../redcap_api_token.R')
 
 # Set the url to the api (ex. https://YOUR_REDCAP_INSTALLATION/api/)
-api_url = 'https://redcap.dtmi.duke.edu/api/'
-y <- postForm(api_url, token = secret_token, content = 'metadata', format = 'csv', .opts=curlOptions(ssl.verifyhost=2))
+api_url <- 'https://redcap.dtmi.duke.edu/api/api/'
+# api_url <- 'https://redcap.dtmi.duke.edu/api/api/'
+y <- postForm(uri = api_url, token = secret_token, content = 'record', format = 'csv', type = 'flat',
+              rawOrLabel = 'label', # doens't make a difference
+              exportDataAccessGroups = 'true',
+              .opts = RCurl::curlOptions(ssl.verifypeer=FALSE))
 
-## If in R for Linux
-## --> NOTE: need to additionally install the Curl C libraries --- not installed on default (like on a Mac)
-## --> NOTE: To install RCurl on a Linux machine
-## From terminal command line:
-# sudo apt-get install libcurl4-openssl-dev
-## Then
-# sudo R
-## Then from within R
-# install.packages("RCurl")
-# --> Code to "export" data from REDCap
-# y <- postForm(api_url, token = secret_token, content = 'record', format = 'csv', type = 'flat')
-
-# Use the output from postForm() to create a data frame of the exported data
 x <- read.table(file = textConnection(y), header = TRUE, sep = ",", na.strings = "",
                 stringsAsFactors = FALSE)
 rm(secret_token, y)
@@ -32,3 +23,16 @@ rm(secret_token, y)
 ## Alternative code:
 #write(y, file = "data_file.csv");
 #x <- read.table("data_file.csv", sep = ",", header = TRUE, na.strings = "")
+
+namelist <- names(x)
+agenamelist <- namelist[grep('age$', namelist)]
+datenamelist <- namelist[grep('dat', namelist)]
+dobnamelist <- namelist[grep('dob', namelist)]
+
+summary(x[,agenamelist])
+dim(x)
+
+agevars <- x[,c('nestid', agenamelist, 'date', 'child_dob', 'mom_dob')]
+
+noage <- agevars[is.na(agevars$age), c('nestid')]
+write.csv(noage, file='noage.csv')

@@ -69,7 +69,15 @@ install.packages('party')
 install.packages('DMwR')
 install.packages('GGally')
 install.packages('tm')
+install.packages('stylo')
 install.packages('wordcloud')
+install.packages('openNLP')
+install.packages('RWeka')
+install.packages(c('RKEA', 'wordnet', 'gsubfn', 'tau', 'Rstem', 'languageR', 'zipfR'))
+install.packages(c('boilerpipeR'))
+install.packages(c('RTextTools', 'topicmodels', 'lda', 'lsa', 'skmeans', 'textir', 'textcat', 'corpora'))
+install.packages('qdap')
+install.packages('SnowballC')
 
 # Machine Learning
 install.packages('randomForest')
@@ -88,6 +96,9 @@ install.packages('sqldf')
 install.packages('RSQLite')
 install.packages(c('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo'))
 
+# other formats
+install.packages('sas7bdat')
+
 # epi450k
 source("http://bioconductor.org/biocLite.R")
 biocLite("limma")
@@ -98,6 +109,7 @@ biocLite("dplR")
   install.packages('gmp')
 biocLite("rhdf5")
 biocLite("qvalue")
+biocLite('Rgraphviz')
 
 install.packages('WriteXLS')
 install.packages("IMA",repos=c("http://rforge.net"))
@@ -136,6 +148,10 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   install.packages('DAAG')
   install.packages('relaimpo')
   install.packages('gvlma')
+  # robust
+  install.packages(c('robustbase', 'robust'))
+  install.packages('sfsmisc')
+  install.packages('quantreg')
 
   # MLM
   install.packages('car')
@@ -152,7 +168,6 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
 
   # SITAR
   install.packages('sitar')
-  install.packages('quantreg')
   install.packages('gamlss')
   install.packages('nlme')
   install.packages('lme4')
