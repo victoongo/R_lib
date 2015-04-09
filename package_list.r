@@ -122,7 +122,7 @@ install.packages('jsonlite')
 install.packages(c('jpeg','readbitmap','png'))
 install.packages(c('rdgal','rgeos','raster'))
 install.packages(c('tuneR','seewave'))
-install.packages('')
+install.packages('openxlsx')
 
 # network
 install.packages('RCurl')
@@ -140,6 +140,10 @@ install.packages('WriteXLS')
 install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in Windows
 
 # Stats
+  # descriptive
+  install.packages('gmodels')
+  install.packages('lsmeans')
+
   # PCA (prcomp and varimax)
   # MISC
   install.packages('bootstrap')
