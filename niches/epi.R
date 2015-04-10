@@ -1,6 +1,7 @@
 library(gmodels)
 library(dplyr)
 library(plyr)
+library(lsmeans)
 setwd('~/niches/SOURCE_DATA')
 
 load('epinew.Rdata')
@@ -13,6 +14,8 @@ margin.table(table(epinew$MEG3IG_CG2_mv, epinew$smoker), 2)
 CrossTable(epinew$MEG3IG_CG2_mv, epinew$smoker)
 table(epinew$smoker, mean())
 
+
+# table 2
 # 3 ways to do this
 # daply(epinew, .(smoker), summarize, mean(MEG3IG_CG2_mv, na.rm=T))
 # with(epinew, by(MEG3IG_CG2_mv, list(smoker), FUN=mean, na.rm=T))
@@ -50,8 +53,6 @@ toutput
 
 
 epinew$MMP9_CG2_mv[!is.infinite(epinew$MMP9_CG2_mv)]
-# table 2
-
 
 
 

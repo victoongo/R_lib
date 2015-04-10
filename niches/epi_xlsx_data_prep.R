@@ -18,7 +18,7 @@ for (i in 1:length(files)) {
   xnames_mv <- paste0(xnames, "_mv")
   name <- sub('_CG[0-9]*$', '', xnames[1])
   for (n in xnames) {
-    f <- paste0("x$", n, "_mv", " <- log(x$", n, ", 2)")
+    f <- paste0("x$", n, "_mv", " <- log(x$", n, "+1, 2)")
     print(f)
     eval(parse(text=f))
     # x <- mutate(x, nm=log(n, 2))
