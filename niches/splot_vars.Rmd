@@ -1,0 +1,17 @@
+---
+title: "Untitled"
+author: "Victor Wang"
+date: "April 2, 2015"
+output: html_document
+---
+
+```{r}
+for (x in c(BRF_names, BASC_names)) {
+  x_old <- paste0(x, '_OLD')
+  y <- paste0('es0_pa_', tolower(x))
+  plot(srs[,x_old], srs[,y])
+  plot(srs[,x_old], srs[,x], main=x)
+  # plot(x, x_old, data=srs)
+}
+
+```

@@ -1,0 +1,24 @@
+---
+title: "Table 2"
+author: "Victor Wang"
+date: "April 16, 2015"
+output: html_document
+---
+
+### Table 2 with m-values. 
+
+```{r, results='asis', echo=FALSE}
+des.table <- xtable(t2_mv, include.rownames=FALSE) # html.table.attributes=list(font.size=7pt)
+# digits(des.table)[c(2,6)] <- 0
+print(des.table, type='html')
+
+```
+
+### Table 2 with beta values
+
+```{r, results='asis', echo=FALSE}
+des.table <- xtable(t2_orig, include.rownames=FALSE) # html.table.attributes=list(font.size=7pt)
+# digits(des.table)[c(2,6)] <- 0
+print(des.table, type='html')
+
+```

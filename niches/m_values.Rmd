@@ -1,0 +1,28 @@
+---
+title: "m-value"
+author: "Victor Wang"
+date: "April 16, 2015"
+output: html_document
+---
+
+### Distribution of the beta values and m-values. 
+#### The _mv version of the variable is the m-value. Adjustment is c = 0.01. 
+
+
+```{r, echo=F}
+setwd('~/niches/SOURCE_DATA')
+load('epinew.Rdata')
+nms <- names(epinew)
+```
+
+
+```{r, echo=FALSE}
+mv_vars <- nms[grep('_mv$', nms)]
+orig_vars <- sub("_mv", "", mv_vars)
+for (i in 1:length(mv_vars)) {
+  orig <- paste0("^", orig_vars[i], "$")
+  # print(orig)
+  hist(epinew[, grep(orig, nms)], main = paste("Histogram of", orig_vars[i]), xlab = orig_vars[i])
+  hist(epinew[, grep(mv_vars[i], nms)], main = paste("Histogram of", mv_vars[i]), xlab = mv_vars[i])
+}
+```

@@ -96,8 +96,6 @@ install.packages('sqldf')
 install.packages('RSQLite')
 install.packages(c('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo'))
 
-# other formats
-install.packages('sas7bdat')
 
 # epi450k
 source("http://bioconductor.org/biocLite.R")
@@ -123,6 +121,9 @@ install.packages(c('jpeg','readbitmap','png'))
 install.packages(c('rdgal','rgeos','raster'))
 install.packages(c('tuneR','seewave'))
 install.packages('openxlsx')
+install.packages('sas7bdat')
+install.packages('readr')
+install_github('hadley/readxl')
 
 # network
 install.packages('RCurl')
