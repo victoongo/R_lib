@@ -123,11 +123,12 @@ install.packages(c('tuneR','seewave'))
 install.packages('openxlsx')
 install.packages('sas7bdat')
 install.packages('readr')
-install_github('hadley/readxl')
+install.packages('readxl')
 
 # network
 install.packages('RCurl')
 install.packages('httr')
+install.packages('rvest')
 
 # 10 list
 install.packages('sqldf') # pandasql for python
@@ -179,3 +180,9 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   install.packages('multcomp')
 
 install.packages('UsingR')
+
+# switch between dev and stable version of packages
+library(devtools)
+dev_mode(on=T)
+install_github("ggplot2")
+dev_mode(on=F) # back to having stable ggplot2

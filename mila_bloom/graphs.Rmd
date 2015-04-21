@@ -1,0 +1,26 @@
+---
+title: "Mila Bloom"
+author: "Victor Wang"
+date: "April 21, 2015"
+output: html_document
+---
+
+### total_steps per day
+
+```{r, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE}
+qplot(DATED, total_steps, data=dailySum, geom='line', colour=factor(PID))
+
+ggplot(dailySum, aes(x=DATED, y = total_steps)) +
+  geom_line() +
+  facet_wrap(~ PID, ncol = 2)
+```
+
+### Green_Foods per day
+
+```{r, results='asis', echo=FALSE, warnings=FALSE, messages=FALSE}
+qplot(DATED, Green_Foods, data=dailySum, geom='line', colour=factor(PID))
+
+ggplot(dailySum, aes(x=DATED, y = Green_Foods)) +
+  geom_line() +
+  facet_wrap(~ PID, ncol = 2)
+```

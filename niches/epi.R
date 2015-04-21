@@ -21,17 +21,63 @@ epinew <- cbind(epinew, m)
 
 epinew <- na.omit(epinew)
 
-epinew$educ.f <- factor(epinew$education)
+epinew$bmic5.f <- factor(cut(epinew$BMI_LMP_kgm2, c(0, 25, 30, 35, 100), right=F))
+epinew$bwt.f <- factor(cut(epinew$BABY_WEIGHT, c(0, 2500, 8000), right=F))
+epinew$mage.f <- factor(cut(epinew$mom_age_delv, c(0, 30, 40, 100), right=F))
 epinew$act_smok.f <- factor(epinew$active_smoke_preg)
+
+epinew$educ.f <- factor(epinew$education)
+epinew$educ.f <- mapvalues(epinew$educ.f, from = c('1', '2', '3', '4', '5'), to = c('1', '2', '2', '3', '3'))
+
 epinew$race.f <- factor(epinew$race_final)
+levels(epinew$race.f)[levels(epinew$race.f) == "Hispanic"] <- "Other"
+
 contrasts(epinew$race.f) <- contr.treatment(4, base=4)
 
 # table 1
 # nms_mv <- unique(sub('_CG[0-9]*_mv$', '', nms[grep('_mv$', nms)]))
 # margin.table(table(epinew$MEG3IG_CG2_mv, epinew$smoker), 2)
 # CrossTable(epinew$MEG3IG_CG2_mv, epinew$smoker)
-# table(epinew$smoker, mean())
+crosstab <- function(x) {
+  table1 <- paste0("t1 <- table(epinew$", x, ", epinew$active_smoke_preg)")
+  print(table1)
+  eval(parse(text=c(table1)))
+  p1 <- round(prop.table(t1, 2), 2)
+  print(t1)
+  pv <- round(fisher.test(t1, workspace = 2e+07, hybrid = TRUE)$p.value, 4)
+  print(pv)
+  (v1 <- cbind(t1, p1*100, pv))
+  v2 <- cbind(paste0(x, "_", rownames(v1)), v1)
+}
+# crosstab("active_smoke_preg")
+# 'educ.f', 'race.f', 'bmic5.f'
+cntr_vars <- c('mage.f', 'educ.f', 'race.f', 'BABY_GENDER', 'bwt.f')
+tb1 <- data.frame()
+for (var in cntr_vars) {
+  tb1 <- rbind(tb1, crosstab(var))
+  # rownames(t1)[nrow(t2_orig)] <- var
+}
+tb2 <- tb1
+rownames(tb2) <- NULL
+x <- paste0("x", as.character(1:8))
+names(tb2) <- c("variable", x, "p.value")
+tb2$x1 <- paste0(as.character(tb2$x1), "(", as.character(tb2$x5), ")")
+tb2$x2 <- paste0(as.character(tb2$x2), "(", as.character(tb2$x6), ")")
+tb2$x3 <- paste0(as.character(tb2$x3), "(", as.character(tb2$x7), ")")
+tb2$x4 <- paste0(as.character(tb2$x4), "(", as.character(tb2$x8), ")")
+tb2a <- subset(tb2, select=-c(x5, x6, x7, x8))
 
+rmarkdown::render('~/Dropbox/Projects/R_lib/niches/table1.Rmd', "html_document")
+
+t1 <- table(epinew$race.f, epinew$active_smoke_preg)
+p1 <- round(prop.table(t1, 2), 2)
+pv <- round(fisher.test(t1, alternative = "greater")$p.value, 4)
+pv <- fisher.test(t1, workspace = 2e+07, hybrid = TRUE)
+(v1 <- data.frame(cbind(t1, p1*100, pv)))
+v2 <- cbind('h', v1)
+names(v1) <- c()
+
+ct1 <- CrossTable(epinew$mage.f, epinew$active_smoke_preg, digits = 2, prop.r = F, prop.t = F, prop.chisq = F, fisher =T)
 
 # table 2 - marginal mean using lsmeans packages
 lsm_test <- function(x) {
