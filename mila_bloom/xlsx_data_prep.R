@@ -36,6 +36,7 @@ fmla <- paste0("cbind(", paste(FD, collapse=", "), ") ~ PID + Date + WEEK")
 
 dailyFuel <-aggregate(as.formula(fmla), data=Fuel, FUN=sum, na.rm=TRUE)
 
+
 dailySum <- merge(dailySteps, dailyFuel, by.x=c('PID', 'Date_steps'), by.y=c('PID', 'Date'))
 dailySum <- dailySum %>% select(-WEEK) %>% rename(DATE = Date_steps, WEEK = week_steps) %>%
   filter(WEEK < 10)
@@ -43,7 +44,7 @@ dailySum <- dailySum %>% select(-WEEK) %>% rename(DATE = Date_steps, WEEK = week
 daily <- group_by(dailySum, PID)
 firstd <- daily %>% summarise(
                firstday = min(DATE),
-               count = n()) %>% filter(count >= 7)
+               count = n()) #%>% filter(count >= 7)
 dailySum <- merge(dailySum, firstd, by='PID')
 
 dailySum <- mutate(dailySum, DATED = as.numeric(difftime(dailySum$DATE, dailySum$firstday, unit="days")))
