@@ -137,7 +137,6 @@ install.packages(c('plyr','stringr','lubridate')) #install.packages('stringi')
 install.packages(c('qcc','reshape2','randomForest'))
 install.packages(c('RSQLite','RODBC','RMySQL','RPostresSQL','RMongo'))
 
-
 install.packages('WriteXLS')
 install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in Windows
 
@@ -145,6 +144,17 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   # descriptive
   install.packages('gmodels')
   install.packages('lsmeans')
+
+  # survey/sampling/weights
+  install.packages('survey')
+  install.packages('sampling')
+  install.packages('VIM')
+  install.packages('weights')
+
+  # imputation
+  install.packages('mi')
+  install.packages('mice')
+  install.packages('mitools')
 
   # PCA (prcomp and varimax)
   # MISC
@@ -178,6 +188,11 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   install.packages('nlme')
   install.packages('lme4')
   install.packages('multcomp')
+
+  # Inverse probability weighting
+  # install.packages('ipw')
+  install.packages('geepack')
+  install.packages("~/ipw_1.0-10.tar.gz", repos = NULL, type = "source")
 
 install.packages('UsingR')
 

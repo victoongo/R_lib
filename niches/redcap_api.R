@@ -24,6 +24,8 @@ rm(secret_token, y)
 #write(y, file = "data_file.csv");
 #x <- read.table("data_file.csv", sep = ",", header = TRUE, na.strings = "")
 
+table(x$nestid)[table(x$nestid)>1]
+
 namelist <- names(x)
 agenamelist <- namelist[grep('age$', namelist)]
 datenamelist <- namelist[grep('dat', namelist)]

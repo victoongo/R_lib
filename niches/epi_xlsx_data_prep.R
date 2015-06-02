@@ -1,4 +1,5 @@
 library(foreign)
+library(sas7bdat)
 library(dplyr)
 library(openxlsx)
 setwd('~/niches/SOURCE_DATA/Data Files Checked for outliers/')
@@ -15,6 +16,7 @@ txt.names <- sub('.xlsx$', '', files)
 
 for (i in 1:length(files)) {
   x <- read.xlsx(files[i])
+  x <- unique(x)
   xnames <- names(x)[-c(1, grep('MEAN$', names(x)))]
   xnames_mv <- paste0(xnames, "_mv")
   name <- sub('_CG[0-9]*$', '', xnames[1])
@@ -40,6 +42,10 @@ for (i in 1:length(files)) {
 
 # put all df in a list
 list.df <- mget(txt.names, envir=globalenv())
+for (df in list.df) {
+  print("")
+  print(table(df$nestid)[table(df$nestid)>1])
+}
 
 # this makes each file a data frame in a list
 # list.df <- list()
@@ -69,7 +75,7 @@ all <- Reduce(function(...) merge(..., all=T), list.df)
 
 
 setwd('~/niches/SOURCE_DATA/')
-load("~/Dropbox/Projects/epigenetics/data/alles.RData")
+alles <- read.sas7bdat('../nest_merge_tb_rc.sas7bdat')
 allnew <- merge(all, alles, 'nestid', all=T)
 
 allnew$meg3_cbs_mean_new <- allnew$meg3_cbs_mean
@@ -77,7 +83,10 @@ allnew$meg3_cbs_mean_new[is.na(allnew$meg3_cbs_mean)] <- allnew$MEG3CBS1_mean[is
 allnew$meg3_ig_mean_new <- allnew$meg3_ig_mean
 allnew$meg3_ig_mean_new[is.na(allnew$meg3_ig_mean)] <- allnew$MEG3IG_mean[is.na(allnew$meg3_ig_mean)]
 
-write.dta(allnew, "newepi.dta")
+
+names(allnew) <- tolower(names(allnew))
+
+write.dta(allnew, "../final_all.dta")
 
 epinew <- merge(all, alles, 'nestid', all.x=T)
 write.dta(epinew, "epinew.dta")
