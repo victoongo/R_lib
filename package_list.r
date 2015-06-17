@@ -62,6 +62,8 @@ install.packages('gclus')
 install.packages('RColorBrewer')
 install.packages('maps')
 install.packages('ggvis')
+install.packages('corrgram')
+install.packages('rggobi')
 
 # Data Mining
 install.packages('rpart')
@@ -145,6 +147,9 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   install.packages('gmodels')
   install.packages('lsmeans')
 
+  install.packages('coin')
+  install.packages('pwr')
+
   # survey/sampling/weights
   install.packages('survey')
   install.packages('sampling')
@@ -192,7 +197,7 @@ install.packages("IMA",repos=c("http://rforge.net")) # no IMA binary for R3.1 in
   # Inverse probability weighting
   # install.packages('ipw')
   install.packages('geepack')
-  install.packages("~/ipw_1.0-10.tar.gz", repos = NULL, type = "source")
+  install.packages("~/Dropbox/Projects/ipw_1.0-10.tar.gz", repos = NULL, type = "source")
 
 install.packages('UsingR')
 

@@ -1,0 +1,95 @@
+---
+title: "Prepregancy Obesity and ADHD"
+author: "Victor Wang"
+date: "June 16, 2015"
+output: html_document
+---
+
+```{r, echo=FALSE, results='asis', include=FALSE}
+library(ipw)
+library(dplyr)
+setwd('~/niches/')
+# alles <- read.sas7bdat('nest_merge_tb_rc.sas7bdat')
+# save(alles, file = "nest_merge_tb_rc.Rdata")
+load(file='nest_merge_tb_rc.Rdata')
+dat_wg <- filter(alles, age_mo_SR_Surv <= 72 & GestAge_TotalDays >= 238)
+dat_wg <- subset(dat_wg, select=c(BASC_APHY, BMI_LMP_kgm2, gest_weight_gain_kg, mat_gest_wt_gain_category, 
+                                  parity_3cat, BABY_WEIGHT, age_mo_SR_Surv, mom_age_delv, race_final, 
+                                  BABY_GENDER, education_final, GestAge_TotalDays, smoker_do_not_use, ASRS_THRSH))
+
+dat_wg <- dat_wg[dat_wg$race_final!="",]
+dat_wg$education_final <- sub("/", "_", dat_wg$education_final)
+dat_wg$educ.f <- factor(dat_wg$education_final, exclude = "")
+contrasts(dat_wg$educ.f) <- contr.treatment(4, base=4)
+dat_wg$race.f <- factor(dat_wg$race_final)
+contrasts(dat_wg$race.f) <- contr.treatment(4, base=4)
+dat_wg$parity.f <- factor(dat_wg$parity_3cat)
+dat_wg$smoker.f <- factor(dat_wg$smoker_do_not_use)
+dat_wg$gender.f <- factor(dat_wg$BABY_GENDER)
+dat_wg$asrs_thrsh.f <- factor(dat_wg$ASRS_THRSH)
+dat_wg$mat_gest_wt_gain_category[dat_wg$mat_gest_wt_gain_category == "missing BMI LMP or Gest wt gain"] <- NA
+dat_wg$mat_gest_wt_gain_c3.f <- factor(dat_wg$mat_gest_wt_gain_category)
+contrasts(dat_wg$mat_gest_wt_gain_c3.f) <- contr.treatment(3, base=2)
+
+dat_wg <- na.omit(dat_wg)
+dat_bmi <- filter(dat_wg, age_mo_SR_Surv <= 66 & GestAge_TotalDays >= 238)
+
+```
+
+## This one examines gestational weight gain as the predictor of ADHD symptoms – would need to model the “treatment” as a categorical variable with 3 levels. 
+
+```{r, echo=TRUE, fig.show='asis'}
+temp <- ipwpoint(exposure = mat_gest_wt_gain_c3.f, family = "ordinal", link = "logit",
+                 numerator = ~ 1, denominator = ~ parity.f + BABY_WEIGHT + age_mo_SR_Surv + mom_age_delv + 
+                   race.f + gender.f + educ.f + GestAge_TotalDays + smoker.f + asrs_thrsh.f, 
+                 data = na.omit(dat_wg))
+summary(temp$ipw.weights)
+ipwplot(weights = temp$ipw.weights, logscale = FALSE,
+        main = "Stabilized weights", xlim = c(0, 8))
+summary(temp$num.mod)
+
+# summary(temp$den.mod)
+dat_wg$sw <- temp$ipw.weights
+msm <- (svyglm(BASC_APHY ~ mat_gest_wt_gain_c3.f, design = svydesign(~ 1, weights = ~ sw, data = dat_wg)))
+coef(msm)
+confint(msm)
+```
+
+### Traditional regression models
+
+```{r, echo=TRUE, fig.show='asis'}
+lm_wg <- lm(BASC_APHY ~ mat_gest_wt_gain_c3.f + parity.f + BABY_WEIGHT + age_mo_SR_Surv + mom_age_delv + 
+              race.f + gender.f + educ.f + GestAge_TotalDays + smoker.f + asrs_thrsh.f, 
+            data = na.omit(dat_wg))
+summary(lm_wg)
+```
+
+## This one examines prepregnancy BMI on a continuous score as a predictor of ADHD symptoms – would need to model the “treatment” as continuous in the IPW method 
+
+```{r, echo=TRUE, fig.show='asis'}
+temp <- ipwpoint(exposure = BMI_LMP_kgm2, family = "gaussian", 
+                 numerator = ~ 1, denominator = ~ gest_weight_gain_kg + parity.f + BABY_WEIGHT + 
+                   age_mo_SR_Surv + mom_age_delv + 
+                   race.f + gender.f + educ.f + GestAge_TotalDays + smoker.f + asrs_thrsh.f, 
+                 data = na.omit(dat_bmi))
+summary(temp$ipw.weights)
+ipwplot(weights = temp$ipw.weights, logscale = FALSE,
+        main = "Stabilized weights", xlim = c(0, 8))
+summary(temp$num.mod)
+
+summary(temp$den.mod)
+dat_bmi$sw <- temp$ipw.weights
+msm <- (svyglm(BASC_APHY ~ BMI_LMP_kgm2, design = svydesign(~ 1, weights = ~ sw, data = dat_bmi)))
+coef(msm)
+confint(msm)
+```
+
+### Traditional regression models
+
+```{r, echo=TRUE, fig.show='asis'}
+lm_bmi <- lm(BASC_APHY ~ BMI_LMP_kgm2 + gest_weight_gain_kg + parity.f + BABY_WEIGHT + age_mo_SR_Surv + 
+               mom_age_delv + race.f + gender.f + educ.f + GestAge_TotalDays + smoker.f + asrs_thrsh.f, 
+             data = na.omit(dat_bmi))
+summary(lm_bmi)
+```
+
