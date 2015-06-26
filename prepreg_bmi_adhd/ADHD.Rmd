@@ -15,7 +15,7 @@ load(file='nest_merge_tb_rc.Rdata')
 dat_wg <- filter(alles, age_mo_SR_Surv <= 72 & GestAge_TotalDays >= 238)
 dat_wg <- subset(dat_wg, select=c(BASC_APHY, BMI_LMP_kgm2, gest_weight_gain_kg, mat_gest_wt_gain_category, 
                                   parity_3cat, BABY_WEIGHT, age_mo_SR_Surv, mom_age_delv, race_final, 
-                                  BABY_GENDER, education_final, GestAge_TotalDays, smoker_do_not_use, ASRS_THRSH))
+                                  BABY_GENDER, education_final, GestAge_TotalDays, maternal_smoking2, ASRS_THRSH))
 
 dat_wg <- dat_wg[dat_wg$race_final!="",]
 dat_wg$education_final <- sub("/", "_", dat_wg$education_final)
@@ -24,15 +24,16 @@ contrasts(dat_wg$educ.f) <- contr.treatment(4, base=4)
 dat_wg$race.f <- factor(dat_wg$race_final)
 contrasts(dat_wg$race.f) <- contr.treatment(4, base=4)
 dat_wg$parity.f <- factor(dat_wg$parity_3cat)
-dat_wg$smoker.f <- factor(dat_wg$smoker_do_not_use)
+dat_wg$smoker.f <- factor(dat_wg$maternal_smoking2)
 dat_wg$gender.f <- factor(dat_wg$BABY_GENDER)
 dat_wg$asrs_thrsh.f <- factor(dat_wg$ASRS_THRSH)
 dat_wg$mat_gest_wt_gain_category[dat_wg$mat_gest_wt_gain_category == "missing BMI LMP or Gest wt gain"] <- NA
 dat_wg$mat_gest_wt_gain_c3.f <- factor(dat_wg$mat_gest_wt_gain_category)
-contrasts(dat_wg$mat_gest_wt_gain_c3.f) <- contr.treatment(3, base=2)
+contrasts(dat_wg$mat_gest_wt_gain_c3.f) <- contr.treatment(3, base=1)
 
 dat_wg <- na.omit(dat_wg)
-dat_bmi <- filter(dat_wg, age_mo_SR_Surv <= 66 & GestAge_TotalDays >= 238)
+dat_bmi <- dat_wg
+dat_wg <- filter(dat_wg, age_mo_SR_Surv <= 66 & GestAge_TotalDays >= 238)
 
 ```
 
@@ -51,7 +52,7 @@ summary(temp$num.mod)
 # summary(temp$den.mod)
 dat_wg$sw <- temp$ipw.weights
 msm <- (svyglm(BASC_APHY ~ mat_gest_wt_gain_c3.f, design = svydesign(~ 1, weights = ~ sw, data = dat_wg)))
-coef(msm)
+summary(msm)
 confint(msm)
 ```
 
@@ -80,7 +81,7 @@ summary(temp$num.mod)
 summary(temp$den.mod)
 dat_bmi$sw <- temp$ipw.weights
 msm <- (svyglm(BASC_APHY ~ BMI_LMP_kgm2, design = svydesign(~ 1, weights = ~ sw, data = dat_bmi)))
-coef(msm)
+summary(msm)
 confint(msm)
 ```
 

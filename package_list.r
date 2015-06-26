@@ -14,6 +14,10 @@ install.packages('timeDate')
 install.packages('reshape2')
 install.packages('pryr')
 
+# geospatial
+install.packages('sp', 'rgdal') # need to install gdal first?
+install.packages('geosphere', 'rgeos', 'maptools')
+
 # working with other language
 install.packages('rpy2')
 
@@ -64,6 +68,7 @@ install.packages('maps')
 install.packages('ggvis')
 install.packages('corrgram')
 install.packages('rggobi')
+install.packages('d3heatmap')
 
 # Data Mining
 install.packages('rpart')
