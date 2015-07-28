@@ -34,11 +34,63 @@ dat_wg$mat_gest_wt_gain_category[dat_wg$mat_gest_wt_gain_category == "missing BM
 dat_wg$mat_gest_wt_gain_c3.f <- factor(dat_wg$mat_gest_wt_gain_category)
 contrasts(dat_wg$mat_gest_wt_gain_c3.f) <- contr.treatment(3, base=1)
 
+dat_wg$bmic5.f <- factor(cut(dat_wg$BMI_LMP_kgm2, c(0, 18.5, 25, 30, 35, 40, 100), right=F))
+dat_wg$baby_weight.f <- factor(cut(dat_wg$BABY_WEIGHT, c(0, 2500, 4200, Inf), right=F))
+dat_wg$gestage.f <- factor(cut((dat_wg$GestAge_TotalDays / 7), c(0, 37, 41, Inf), right=F))
+dat_wg$mom_age_delv.f <- factor(cut(dat_wg$mom_age_delv, c(0, 25, 30, 35, Inf), right=F))
+# contrasts(nwaz$bmic5.f) <- contr.treatment(6, base=2)
+
 dat_wg <- na.omit(dat_wg)
 dat_bmi <- dat_wg
 dat_wg <- filter(dat_wg, age_mo_SR_Surv <= 66 & GestAge_TotalDays >= 238)
 
 ```
+
+```{r, results="asis", echo=F}
+fvar <- subset(dat_wg, select=c(mom_age_delv.f, educ.f, race.f, parity.f, asrs_thrsh.f, smoker.f, bmic5.f, mat_gest_wt_gain_c3.f, gestage.f, baby_weight.f, BABY_GENDER))
+cvar <- subset(dat_wg, select=c(BASC_APHY, BRF_GEC))
+
+# tblFun <- function(x){
+#     tbl <- table(x)
+#     # cbind(tbl, round(prop.table(tbl)*100, 0))
+#     df <- data.frame(cbind(tbl, round(prop.table(tbl)*100, 0)))
+#     names(df) <- c("n", "pct")
+#     df
+# }
+# p.table <- sapply(fvar, tblFun)
+# lapply(p.table, cbind)
+# p.table <- data.frame(rbind(p.table))
+
+tblFun <- function(x){
+    tbl <- table(x)
+    prop <- round(prop.table(tbl)*100,0)
+    prop
+    # cbind(tbl, round(prop.table(tbl)*100, 0))
+}
+des.table <- cbind(
+  data.frame(unlist(apply(fvar, 2, table))),
+  data.frame(unlist(apply(fvar, 2, tblFun))),
+  round(data.frame(unlist(apply(fvar, 2, function(x) by(cvar$BASC_APHY, x, mean)))), 2),
+  round(data.frame(unlist(apply(fvar, 2, function(x) by(cvar$BASC_APHY, x, sd)))), 1),
+  round(data.frame(unlist(apply(fvar, 2, function(x) by(cvar$BRF_GEC, x, mean)))), 2),
+  round(data.frame(unlist(apply(fvar, 2, function(x) by(cvar$BRF_GEC, x, sd)))), 1)
+)
+for (i in 1:ncol(des.table)) {
+  des.table[,i] <- as.character(des.table[,i])
+}
+names(des.table) <- c('n', '(%)', "Mean", "(SD)", "Mean", "(SD)")
+des.table[, 2] <- paste0("(", des.table[, 2], ")")
+des.table[, 4] <- paste0("(", des.table[, 4], ")")
+des.table[, 6] <- paste0("(", des.table[, 6], ")")
+
+write.csv(des.table, file="des.table.csv")
+
+des.table <- xtable(des.table, include.rownames=FALSE) # html.table.attributes=list(font.size=7pt)
+# digits(des.table)[c(2,6)] <- 0
+print(des.table, type='html')
+
+```
+
 
 ## This one examines gestational weight gain as the predictor of ADHD symptoms – would need to model the “treatment” as a categorical variable with 3 levels. 
 
@@ -50,30 +102,39 @@ ipw_wt <- function() {
                    data = na.omit(dat_wg))
   dat_wg$sw <- temp$ipw.weights
   msm <- (svyglm(outcome ~ mat_gest_wt_gain_c3.f, design = svydesign(~ 1, weights = ~ sw, data = dat_wg)))
-  results <- summary(msm)$coef[2:3, c(1, 4)]
-  results <- round(results, digits=3)
-  results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
+  # results <- matrix(summary(msm)$coef[2:3, c(1, 2, 4)], 2, 3)
+  results <- data.frame(summary(msm)$coef[2:3, c(1, 2, 4)])
+  results$cat <- rownames(results)
+  results$out <- outcome_vnames[outcome_n]
+  # rownames(results) <- outcome_vnames[outcome_n]
+  # results[, c(1, 2)] <- round(results[, c(1, 2)], digits=2)
+  # results[, 3] <- round(results[, 3], digits=3)
+  # results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
+  return(results)
 }
 lm_wt <- function() {
   lm_wg <- lm(outcome ~ mat_gest_wt_gain_c3.f + BMI_LMP_kgm2 + parity.f + BABY_WEIGHT + age_mo_SR_Surv +
                 mom_age_delv + race.f + gender.f + educ.f + GestAge_TotalDays + smoker.f + asrs_thrsh.f, 
               data = na.omit(dat_wg))
-  results <- summary(lm_wg)$coef[2:3, c(1, 4)]
+  results <- matrix(summary(lm_wg)$coef[2:3, c(1, 4)], 1, 3)
   results <- round(results, digits=3)
-  results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
+  # results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
 }
-outcome_vars <- select(dat_wg, BASC_APHY, BASC_AP, BASC_HY, BRF_IN, BRF_SF, BRF_EC, BRF_WM, BRF_PO, BRF_GEC)
+outcome_vars <- select(dat_wg, BASC_APHY, BASC_HY, BASC_AP, BRF_GEC, BRF_IN, BRF_SF, BRF_EC, BRF_WM, BRF_PO)
 outcome_vnames <- names(outcome_vars)
 ipw_wt_all <- NULL
 lm_wt_all <- NULL
 for (outcome_n in 1:length(outcome_vars)) {
   dat_wg$outcome <- outcome_vars[, outcome_n]
-  ipw_wt_all <- cbind(ipw_wt_all, ipw_wt())
-  lm_wt_all <- cbind(lm_wt_all, lm_wt())
+  ipw_wt_all <- rbind(ipw_wt_all, ipw_wt())
+  lm_wt_all <- rbind(lm_wt_all, lm_wt())
 }
+# ipw_wt_all$cat <- strtrim(rownames(ipw_wt_all), 22)
+ipw_wt_all$cat <- substr(ipw_wt_all$cat, 22, 22)
+ipw_wt_all_w <- reshape(ipw_wt_all, timevar = "cat", idvar=c("out"), direction = "wide")
 ```
 ```{r, echo=FALSE, fig.show='asis', results='asis'}
-ipw_wt_all.table <- xtable(ipw_wt_all, include.rownames=FALSE)
+ipw_wt_all.table <- xtable(ipw_wt_all_w, include.rownames=FALSE)
 # digits(des.table)[c(2,6)] <- 0
 print(ipw_wt_all.table, type='html')
 ```
@@ -97,30 +158,35 @@ ipw_bmi <- function() {
                    data = na.omit(dat_bmi))
   dat_bmi$sw <- temp$ipw.weights
   msm <- (svyglm(outcome ~ BMI_LMP_kgm2, design = svydesign(~ 1, weights = ~ sw, data = dat_bmi)))
-  results <- summary(msm)$coef[2, c(1, 4)]
-  results <- round(results, digits=3)
-  results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
+  results <- summary(msm)$coef[2, c(1, 2, 4)]
+  # results <- summary(msm)$coef[2, c(1, 2, 4)]
+  # rownames(results) <- outcome_vnames[outcome_n]
+  # results[, c(1, 2)] <- round(results[, c(1, 2)], digits=2)
+  # results[, 3] <- round(results[, 3], digits=3)
+  return(results)
+  # results <- cbind(outcome_vnames[outcome_n], results)
+  # results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
 }
 lm_bmi <- function() {
   lm_bmi <- lm(outcome ~ BMI_LMP_kgm2 + gest_weight_gain_kg + parity.f + BABY_WEIGHT + age_mo_SR_Surv + 
                  mom_age_delv + race.f + gender.f + educ.f + GestAge_TotalDays + smoker.f + asrs_thrsh.f, 
                data = na.omit(dat_bmi))
-  results <- summary(lm_bmi)$coef[2, c(1, 4)]
+  results <- summary(lm_bmi)$coef[2, c(1, 2, 4)]
   results <- round(results, digits=3)
-  results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
+  # results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
 }
-outcome_vars <- select(dat_bmi, BASC_APHY, BASC_AP, BASC_HY, BRF_IN, BRF_SF, BRF_EC, BRF_WM, BRF_PO, BRF_GEC)
+outcome_vars <- select(dat_bmi, BASC_APHY, BASC_HY, BASC_AP, BRF_GEC, BRF_IN, BRF_SF, BRF_EC, BRF_WM, BRF_PO)
 outcome_vnames <- names(outcome_vars)
 
 ipw_bmi_all <- NULL
 lm_bmi_all <- NULL
 for (outcome_n in 1:length(outcome_vars)) {
   dat_bmi$outcome <- outcome_vars[, outcome_n]
-  ipw_bmi_all <- cbind(ipw_bmi_all, ipw_bmi())
-  lm_bmi_all <- cbind(lm_bmi_all, lm_bmi())
+  ipw_bmi_all <- rbind(ipw_bmi_all, ipw_bmi())
+  lm_bmi_all <- rbind(lm_bmi_all, lm_bmi())
 }
-rownames(ipw_bmi_all)[2] <- "BMI"
-rownames(lm_bmi_all)[2] <- "BMI"
+# rownames(ipw_bmi_all)[2] <- "BMI"
+# rownames(lm_bmi_all)[2] <- "BMI"
 ```
 
 ```{r, echo=FALSE, fig.show='asis', results='asis'}

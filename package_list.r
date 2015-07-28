@@ -53,8 +53,8 @@ install_github('rstudio/DT')
 install_github('rstudio/leaflet')
 
 library(devtools)
-install_github('slidify', 'ramnathv')
-install_github('slidifyLibraries', 'ramnathv')
+install_github('ramnathv/slidify')
+install_github('ramnathv/slidifyLibraries')
 
 
 # Viz
@@ -121,16 +121,16 @@ install.packages("IMA",repos=c("http://rforge.net"))
 
 # data types
 install.packages('data.table')
-install.packages('xlsx')
-install.packages('XLConnect')
+install.packages('readxl')
+# install.packages('xlsx')
+# install.packages('XLConnect')
+# install.packages('openxlsx')
 install.packages('jsonlite')
 install.packages(c('jpeg','readbitmap','png'))
 install.packages(c('rdgal','rgeos','raster'))
 install.packages(c('tuneR','seewave'))
-install.packages('openxlsx')
 install.packages('sas7bdat')
 install.packages('readr')
-install.packages('readxl')
 
 # network
 install.packages('RCurl')
