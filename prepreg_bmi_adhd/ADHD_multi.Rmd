@@ -116,9 +116,12 @@ lm_wt <- function() {
   lm_wg <- lm(outcome ~ mat_gest_wt_gain_c3.f + BMI_LMP_kgm2 + parity.f + BABY_WEIGHT + age_mo_SR_Surv +
                 mom_age_delv + race.f + gender.f + educ.f + GestAge_TotalDays + smoker.f + asrs_thrsh.f, 
               data = na.omit(dat_wg))
-  results <- matrix(summary(lm_wg)$coef[2:3, c(1, 4)], 1, 3)
-  results <- round(results, digits=3)
+  results <- data.frame(summary(lm_wg)$coef[2:3, c(1, 2, 4)])
+  results$cat <- rownames(results)
+  results$out <- outcome_vnames[outcome_n]
+  # results <- round(results, digits=3)
   # results <- rbind(c(dim(dat_wg)[1], outcome_vnames[outcome_n]), results)
+  return(results)
 }
 outcome_vars <- select(dat_wg, BASC_APHY, BASC_HY, BASC_AP, BRF_GEC, BRF_IN, BRF_SF, BRF_EC, BRF_WM, BRF_PO)
 outcome_vnames <- names(outcome_vars)
@@ -132,6 +135,9 @@ for (outcome_n in 1:length(outcome_vars)) {
 # ipw_wt_all$cat <- strtrim(rownames(ipw_wt_all), 22)
 ipw_wt_all$cat <- substr(ipw_wt_all$cat, 22, 22)
 ipw_wt_all_w <- reshape(ipw_wt_all, timevar = "cat", idvar=c("out"), direction = "wide")
+
+lm_wt_all$cat <- substr(lm_wt_all$cat, 22, 22)
+lm_wt_all_w <- reshape(lm_wt_all, timevar = "cat", idvar=c("out"), direction = "wide")
 ```
 ```{r, echo=FALSE, fig.show='asis', results='asis'}
 ipw_wt_all.table <- xtable(ipw_wt_all_w, include.rownames=FALSE)
@@ -142,7 +148,7 @@ print(ipw_wt_all.table, type='html')
 ### Traditional regression models
 
 ```{r, echo=FALSE, fig.show='asis', results='asis'}
-lm_wt_all.table <- xtable(lm_wt_all, include.rownames=FALSE)
+lm_wt_all.table <- xtable(lm_wt_all_w, include.rownames=FALSE)
 # digits(des.table)[c(2,6)] <- 0
 print(lm_wt_all.table, type='html')
 ```
